@@ -43,6 +43,8 @@ $tpl->setVar('article_content', '
 		else
 			echo stripslashes($sql->row[\'content\']);',true);
 $tpl->setVar('article_scans', 'echo $scansCount',true);
+$tpl->setVar('cms_root_dir', 'echo $zengl_cms_rootdir;',true);
+$tpl->template_parse();
 $tpl->cache();
 include $filecache;
 ?>

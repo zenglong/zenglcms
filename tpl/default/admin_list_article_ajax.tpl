@@ -1,5 +1,5 @@
-<table>
-	<tr align='center'><th>文章ID</th><th>选择</th><th>文章标题</th><th>所属栏目</th><th>时间</th><th>状态</th><th>操作</th></tr>
+<table id="list_articles_table">
+	<tr align='center'><th width="90">文章ID</th><th width="70">选择</th><th>文章标题</th><th>所属栏目</th><th>时间</th><th>状态</th><th>操作</th></tr>
 	{zengl for_articles}
 	<tr>
 		<td align='center' >{zengl article_id}</td>

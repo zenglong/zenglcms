@@ -22,6 +22,7 @@ else
 	$tpl->setVar('logout_loc', $zengl_cms_rootdir . 'login_out_register.php?action=logout&redirect=admin_logout');
 	$tpl->setVar('index_loc', $zengl_cms_rootdir . 'index.php');
 	$tpl->setVar('left_loc', $zengl_cms_rootdir . 'admin.php?arg=showleft');
+	$tpl->setVar('mid_loc', $zengl_cms_rootdir . 'admin.php?arg=show_middle');
 	$tpl->setVar('right_loc', $zengl_cms_rootdir . 'admin.php?arg=showright');
 	$tpl->cache();
 	include $filecache;

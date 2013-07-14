@@ -3,13 +3,25 @@ global $zengl_cms_rootdir;
 global $rvar_sec_ID;
 global $rvar_sec_page;
 global $rvar_tag;
+global $rvar_keyword; //查询关键词
+global $rvar_query_type; //查询类型
 global $rvar_is_recur;
 global $rvar_flagUsePHP;
 global $listshow_article_smimg_default;
 global $adminHtml_genhtml;
 global $zengl_cms_use_html;
 
-if($adminHtml_genhtml=='yes' || $rvar_flagUsePHP == 'yes' || $rvar_tag != '')
+//防止一些php notice警告信息
+if(!isset($rvar_sec_ID)) $rvar_sec_ID = '';
+if(!isset($rvar_sec_page)) $rvar_sec_page = '';
+if(!isset($rvar_tag)) $rvar_tag = '';
+if(!isset($rvar_keyword)) $rvar_keyword = '';
+if(!isset($rvar_query_type)) $rvar_query_type = '';
+if(!isset($rvar_is_recur)) $rvar_is_recur = '';
+if(!isset($rvar_flagUsePHP)) $rvar_flagUsePHP = '';
+
+if($adminHtml_genhtml=='yes' || $rvar_flagUsePHP == 'yes' || $rvar_tag != '' ||
+		$rvar_keyword != '')
 	;
 else if($zengl_cms_use_html == 'yes')
 {
@@ -29,10 +41,21 @@ if($this->all == null)
 	$section->getall();
 	$this->all =&$section->all;
 }
+
 if($rvar_tag != '')
 {
 	$tags = new tags(&$sql);
 	$tags->query($startPage,$this->page_size);
+}
+else if($rvar_keyword) //根据关键词查询
+{
+	$escape_keyword = $sql->escape_str($rvar_keyword);
+	$query_condition = "title like '%{$escape_keyword}%'";
+	if($rvar_query_type == '2')
+		$query_condition .= " or content like '%{$escape_keyword}%'";
+	$query_order = "order by articleID desc";
+	$sql->query("select *  from {$sql->tables_prefix}articles where {$query_condition} {$query_order} 
+		limit $startPage,{$this->page_size}");
 }
 else if($rvar_sec_ID!='' && $rvar_sec_ID!='0' )
 {
@@ -50,8 +73,20 @@ else if($rvar_sec_ID!='' && $rvar_sec_ID!='0' )
 }
 else
 	$sql->query("select * from $sql->tables_prefix" . "articles order by articleID desc limit $startPage,{$this->page_size}");
-$filetpl = $zengl_cms_tpl_dir . $zengl_theme . '/list_articles_ajax.tpl';
-$filecache = $zengl_cms_tpl_dir . 'cache/list_articles_ajax_cache.php';
+
+$mydefined_tpl_ajax_name = str_replace('.tpl', '_ajax.tpl' , $this->all[$rvar_sec_ID]['tpl']);
+$mydefined_tpl_path = $zengl_cms_tpl_dir . $zengl_theme . '/'. $mydefined_tpl_ajax_name;
+if($this->all[$rvar_sec_ID]['tpl'] != '' &&
+   file_exists($mydefined_tpl_path))
+{
+	$filetpl = $mydefined_tpl_path;
+	$filecache = $zengl_cms_tpl_dir . 'cache/' . convertToCache($mydefined_tpl_ajax_name);
+}
+else
+{
+	$filetpl = $zengl_cms_tpl_dir . $zengl_theme . '/list_articles_ajax.tpl';
+	$filecache = $zengl_cms_tpl_dir . 'cache/list_articles_ajax_cache.php';
+}
 if(!file_exists($filetpl))
 	die('tpl file '.$filetpl.' does not exist!');
 if($adminHtml_genhtml == 'yes')
@@ -66,49 +101,8 @@ if(file_exists($filecache) && ( filemtime($filecache) > filemtime($filetpl) ) &&
 	include $filecache;
 else
 {
-	/* $loc = '"'.$zengl_cms_rootdir.'add_edit_del_show_list_article.php?hidden=show' .
-			'&articleID=<?php echo $sql->row["articleID"] ?>"'; */
-	$loc = '
-	<?php
-		if(!$flaghtml)
-			echo "\"". $zengl_cms_rootdir . "add_edit_del_show_list_article.php?hidden=show" .
-				"&articleID=" . $sql->row["articleID"] . "\"";
-		else
-		{
-			$secId = $sql->row["sec_ID"];
-			if($this->all[$secId]["sec_dirpath"] != "")
-				$sec_dirpath = "html/" . $this->all[$secId]["sec_dirpath"] . "/" .
-								 $this->all[$secId]["sec_dirname"];
-			else
-				$sec_dirpath = "html/" . $this->all[$secId]["sec_dirname"];
-			echo "\"". $zengl_cms_rootdir . $sec_dirpath . "/article-" . $sql->row["articleID"] .
-				 ".html" . "\"";
-		}
-	?>';
-	$edit = '"'.$zengl_cms_rootdir.'add_edit_del_show_list_article.php?hidden=edit' .
-			'&articleID=<?php echo $sql->row["articleID"] ?>"';
-	$del = '"'.$zengl_cms_rootdir.'add_edit_del_show_list_article.php?hidden=del' .
-			'&articleID=<?php echo $sql->row["articleID"] ?>"';
-
 	$tpl = new tpl($filetpl, $filecache);
-	$tpl->setVar('for_articles', '<?php while ($sql->parse_results()) { ?>');
-	$tpl->setVar('article_loc', $loc);
-	$tpl->setVar('article_title', '<?php echo subUTF8($sql->row["title"],32); ?>');
-	$tpl->setVar('article_tip', '
-			$smimgpath = $sql->row["smimgpath"];
-			if($smimgpath == "")
-				$smimgpath = $listshow_article_smimg_default;
-			if($flaghtml)
-				$smimgpath = $zengl_cms_rootdir . $smimgpath;
-			$article_title = $sql->row["title"] . "<br/>" .
-								"<img src=\"$smimgpath\">" . "<br/>" .
-								$sql->row["descript"];
-			echo htmlentities($article_title,ENT_QUOTES,"utf-8");',true);
-	$tpl->setVar('sec_name', '<?php echo $this->all[$sql->row["sec_ID"]]["sec_name"]; ?>');
-	$tpl->setVar('article_time','<?php echo date("Y/n/j G:i:s",$sql->row["time"]) ?>');
-	$tpl->setVar('article_edit', $edit);
-	$tpl->setVar('article_del', $del);
-	$tpl->setVar('endfor', '<?php } ?>');
+	$tpl->template_parse();
 	$tpl->cache();
 	include $filecache;
 }
@@ -118,8 +112,8 @@ if($flaghtml)
 	mkdirs($sec_dirpath);
 	file_put_contents($sec_dirpath . '/index-' . $rvar_sec_page . '.html' ,ob_get_contents());
 	ob_end_clean();
-	echo "生成栏目{$this->all[$rvar_sec_ID]['sec_name']} $sec_dirpath/index-".
-		 "$rvar_sec_page.html 成功<br/>";
-	flush_buffers();
+	$this->progress("生成栏目{$this->all[$rvar_sec_ID]['sec_name']} $sec_dirpath/index-".
+		 			"$rvar_sec_page.html 成功",false);
+	//flush_buffers();
 }
 ?>

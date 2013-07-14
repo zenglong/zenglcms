@@ -41,8 +41,8 @@ $(document).ready(function() {
 </head>
 <body>
 <div id = 'main'>
-	<div id = "main_head">
-	</div>
+	<!--<div id = "main_head">
+	</div>-->
 	<div id = "main_mid">
 		<div id="title">
 			{zengl title}
@@ -52,8 +52,8 @@ $(document).ready(function() {
 		<span id='timer'></span>秒后跳转到评论页!..
 		</div>
 	</div>
-	<div id = "main_last">
-	</div>
+	<!--<div id = "main_last">
+	</div>-->
 </div>
 </body>
 </html>

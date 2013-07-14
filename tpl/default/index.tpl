@@ -2,16 +2,17 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-<link rel="stylesheet" type="text/css" href="{zengl theme}/css/superfish.css" media="screen">
-<link rel="stylesheet" type="text/css" href="{zengl theme}/css/index.css" media="screen">
-<link rel="stylesheet" type="text/css" href="{zengl theme}/css/skin.css" media="screen">
-<script type="text/javascript" src="{zengl theme}/js/jquery-1.7.1.js"></script>
-<script type="text/javascript" src="{zengl theme}/js/hoverIntent.js"></script>
-<script type="text/javascript" src="{zengl theme}/js/superfish.js"></script>
-<script type="text/javascript" src="{zengl theme}/js/jquery.jcarousel.min.js"></script>
-{zengl sec_array}
+{php $mytheme_path = $zengl_cms_tpl_dir . $zengl_theme}
+<link rel="stylesheet" type="text/css" href="{$mytheme_path}/css/superfish.css" media="screen">
+<link rel="stylesheet" type="text/css" href="{$mytheme_path}/css/colorbox.css" media="screen">
+<link rel="stylesheet" type="text/css" href="{$mytheme_path}/css/index.css" media="screen">
+<link rel="stylesheet" type="text/css" href="{$mytheme_path}/css/skin.css" media="screen">
+<script type="text/javascript" src="{$mytheme_path}/js/jquery-1.7.1.js"></script>
+<script type="text/javascript" src="{$mytheme_path}/js/hoverIntent.js"></script>
+<script type="text/javascript" src="{$mytheme_path}/js/superfish.js"></script>
+<script type="text/javascript" src="{$mytheme_path}/js/jquery.jcarousel.min.js"></script>
+<script type="text/javascript" src="{$mytheme_path}/js/jquery.colorbox-min.js"></script>
 <script type="text/javascript">
-ishtml = '{zengl ishtml}';
 function mycarousel_initCallback(carousel)
 {
     // Disable autoscrolling if the user clicks the prev or next button.
@@ -34,51 +35,39 @@ function mycarousel_initCallback(carousel)
 };
 $(document).ready(function() {
 		$('ul.sf-menu').superfish();
-		$('ul.sf-menu a').click(function(){
-					s = $(this)[0].href;
-					s = s.substr(s.lastIndexOf('/')+1);
-					if(isNaN(s))
-					{
-						location.href = $(this)[0].href;
-						return false;
-					}
-					
-					if(ishtml == 'yes')
-					{
-						if(sec_array[s]['sec_dirpath'] != '')
-							sec_dirpath = 'html/' + sec_array[s]['sec_dirpath'] + '/' + 
-											sec_array[s]['sec_dirname'];
-						else
-							sec_dirpath = 'html/' + sec_array[s]['sec_dirname'];
-						location.href='{zengl cms_root_dir}' + sec_dirpath + '/';
-					}
-					else
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=list&sec_ID='+s+'&is_recur=yes';
-					return false;
-						});
-		if(ishtml == 'yes')
-			$('#user_area').load('{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=show&articleID=1&isfromhtml=yes',
+		{if $adminHtml_genhtml == 'yes'}
+			$('#user_area').load('{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=show&articleID=1&isfromhtml=yes',
 									function(response, status, xhr){
+										$('#user_area a').prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;").hover(function(){
+																$(this).css({"background":'red'});
+															},function(){
+																$(this).css({"background":'black'});
+															}).css({"background":'black',"color":'white'});
 									});
-		if(ishtml == 'yes')
-			$('.comment_img_middle').load('{zengl cms_root_dir}comment_operate.php?action=getsome&isfromhtml=yes',function(){
+		{/if}
+
+		{if $adminHtml_genhtml == 'yes'}
+			$('.comment_img_middle').load('{$zengl_cms_rootdir}comment_operate.php?action=getsome&isfromhtml=yes',function(){
 				$('.comment_img_middle a').hover(function(){
 					$(this).addClass('a_hover').css({"color":"white"});
 				},function(){
 					$(this).removeClass('a_hover').css({"color":"#000"});
 				});
+				$('.comment_list').colorbox({iframe:true, width:"90%", height:"90%"});
 			});
-		else
-			$('.comment_img_middle').load('{zengl cms_root_dir}comment_operate.php?action=getsome',function(){
+		{else}
+			$('.comment_img_middle').load('{$zengl_cms_rootdir}comment_operate.php?action=getsome',function(){
 				$('.comment_img_middle a').hover(function(){
 					$(this).addClass('a_hover').css({"color":"white"});
 				},function(){
 					$(this).removeClass('a_hover').css({"color":"#000"});
 				});
+				$('.comment_list').colorbox({iframe:true, width:"90%", height:"90%"});
 			});
+		{/if}
 		$(".comment_img_middle").ajaxSend(function(event, request, settings){
-			if(settings.url != '{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=show&articleID=1&isfromhtml=yes')
-				$(this).html("<img src='{zengl cms_root_dir}images/loading.gif' /> 正在读取评论数据。。。");
+			if(settings.url != '{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=show&articleID=1&isfromhtml=yes')
+				$(this).html("<img src='{$zengl_cms_rootdir}images/loading.gif' /> 正在读取评论数据。。。");
 			});
 		$('#sm_imgs').jcarousel({
 			auto: 2,
@@ -91,22 +80,58 @@ $(document).ready(function() {
     	},function(){
     		$(this).removeClass('a_hover').css({"color":"#000"});
     	});
-	});
+
+       is_init_a_style = false;
+       /*由中英文字符串的个数得到字符串的像素宽度*/
+       function getStringWidth(str) {
+		var width = len = str.length;
+		for(var i=0; i < len; i++) {
+			if(str.charCodeAt(i) >= 255) {
+				width++;
+			}
+		}
+		return width * 8 + 'px';
+	}
+	function set_a_style()
+	{
+		$("#menu_id a,.widelink a").hover(function(){
+						$(this).css({"background":'red'});
+					},function(){
+						$(this).css({"background":'black'});
+					}).css({"background":'black',"color":'white'});
+		if(!is_init_a_style)
+		{
+			$(".widelink a").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+			/*
+				下面先通过调用getStringWidth函数得到菜单中每个菜单项里的文本的字符串宽度，
+				然后根据这个宽度值来设置菜单的像素宽。从而可以达到在各种浏览器下都可以用的菜单换行效果。
+			*/
+			$("#menu_id li a").each(function(i){
+				$(this).css({"width":getStringWidth($(this).text())});
+			});
+			is_init_a_style = true;
+		}
+	}
+	set_a_style();
+});
 </script>
-<title>{zengl title}</title>
+<title>{$title}</title>
 <meta name="keywords" content="zengl,开源网,zengl编程语言,zengl_language,zenglCMS,FCKeditor,中文手册"/>
 <meta name="description" content="zengl开源网，zengl编程语言开发自己的编程语言，zenglcms开发自己的CMS系统，FCKeditor中文使用手册"/>
 </head>
 <body>
 <div id = "maindiv">
-{zengl header}
-<div id = "user_area">{zengl username}  {zengl user_operate}</div>
+{php $this->header()}
+<div id = "user_area" class = 'widelink'>{if !$flaghtml}{$username}{/if} {if !$flaghtml}{$user_op}{/if}</div>
 <br/><br/>
 
-{zengl secmenu} "menu_id" , "sf-menu" {zengl secmenu_end}
+{mytpl_recur_show_secs(&$this,1,1,"menu_id","sf-menu")}
 <br/><br/><br/>
 
-<div id='centerdiv'>
+<!--<div id='centerdiv'>-->
+	<table>
+	<tr>
+	<td>
 	<div id='center_left'>
 		<div id='recent_updates'>
 			<div class='updates_img_header'>
@@ -114,24 +139,55 @@ $(document).ready(function() {
 			</div>
 			<div class='updates_img_middle'>
 				<div class='recent_header'>最近更新：</div>
-				{zengl for_recent_updates}
-				<span><a href='{zengl update_loc}' title = '{zengl update_title}'>{zengl update_sm_title}</a></span>
-				{zengl for_recent_end}
+				{php $sql->query($sqlstr_recent);}
+				{if $sql->get_num()==0}
+					暂无文章！
+				{else}
+					{while $sql->parse_results()}
+						{php $update_sec = $sql->row["sec_ID"]; $update_sec = $this->GetSecDirFullPath($update_sec);}
+						{if !$flaghtml}
+							<span><a href='{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=show&amp;articleID={$sql->row[articleID]}' title = '{$sql->row[title]}'>{php echo subUTF8($sql->row["title"],30);}</a></span>
+						{else}
+							<span><a href='{$zengl_cms_rootdir}{$update_sec}/article-{$sql->row[articleID]}.html' title = '{$sql->row[title]}'>{php echo subUTF8($sql->row["title"],30);}</a></span>
+						{/if}
+					{/while}
+				{/if}
 			</div>
 			<div class='updates_img_footer'>
 			</div>
 		</div>
 		
 		<ul id='sm_imgs' class="jcarousel-skin-tango">
-			{zengl for_imgs}
-			<li><a href='{zengl img_loc}'><img src='{zengl img_src}' width='200' height='150' alt='{zengl img_title}' title='{zengl img_title}' /></a></li>
-			{zengl for_imgs_end}
+			{php $sql->query($sqlstr_imgs);}
+			{if $sql->rownum == 0}
+				暂无图片！
+			{else}
+				{while $sql->parse_results()}
+					{php $img_sec = $sql->row["sec_ID"]; $img_sec = $this->GetSecDirFullPath($img_sec);}
+					<li>
+						{if !$flaghtml}
+						<a href='{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=show&amp;articleID={$sql->row[articleID]}'>
+						{else}
+						<a href='{$zengl_cms_rootdir}{$img_sec}/article-{$sql->row[articleID]}.html'>
+						{/if}
+						{if empty($magic_quote)}
+							<img src='{$sql->row[smimgpath]}' width='200' height='150' alt='{$sql->row[title]}' title='{$sql->row[title]}' />
+						{else}
+							<img src='{php echo stripslashes($sql->row["smimgpath"]);}' 
+							width='200' height='150' alt='{$sql->row[title]}' title='{$sql->row[title]}' />
+						{/if}
+						</a>
+					</li>
+				{/while}
+			{/if}
 		</ul>
 		
 		<div class="article">
-		{zengl articles_divs}
+		{php $sql->query($sqlstr_divs); mytpl_index_articles_divs(&$this);}
 		</div>
 	</div>
+	</td>
+	<td valign="top">
 	<div id='center_right'>
 		<div class='comment_img_header'>
 		</div>
@@ -141,10 +197,24 @@ $(document).ready(function() {
 		<div class='comment_img_footer'>
 		</div>
 	</div>
+	<div id='center_right'>
+		<div class='comment_img_header'>
+		</div>
+		<div class='comment_img_public' style='background: url("{$mytheme_path}/images/index_img/index_comment_middle.jpg") repeat-y;'>
+			<span class="comment_head">站点公告栏：</span>
+			<span class="comment_content">
+			</span>
+		</div>
+		<div class='comment_img_footer'>
+		</div>
+	</div>
 	<div style = 'clear:both;'></div>
-</div>
+	</td>
+	</tr>
+	</table>
+<!--</div>-->
 
 </div>
-{zengl footer}
+{php $this->footer();}
 </body>
 </html>

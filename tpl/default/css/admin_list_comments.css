@@ -1,5 +1,21 @@
+*{
+    font-family: Verdana,Arial;
+    word-break: break-all;
+	font-size:12px;
+}
+a:link, a:visited, a:active {
+    /*color: #000000;*/
+    text-decoration: none;
+}
+body{
+	background:#c7fab5;
+}
+img {
+   border: 0;
+}
 #maindiv{
-	width:1500px;
+	/*width:1500px;*/
+	width:100%;
 }
 .comment_table .comment_td{
 	padding-left:20px;
@@ -24,13 +40,42 @@
 	background-color: #8DBDD8;
 }
 
+
+table{
+	width:100%;
+}
 table tr td p{
 	margin-top: 0px; 
 	margin-bottom: 0px;
 }
+tr{
+	/*background:#c7fab5;*/
+	background: url(../images/admin_list_articles_css_img/graygradient.png) top left repeat-x;
+	height: 23px;
+	font-size: 12px;
+}
+tr .first_td{
+	width:150px;
+}
+tr td a{
+	color:#000;
+}
+tr td a:hover{
+	color:#fff;
+}
+.td_hover{
+	background: url(../images/admin_list_articles_css_img/greengradient.png) repeat-x;
+	color:#fff;
+}
+#header_title{
+	width:100%;
+	font-size:18px;
+	background:#c7fab5;
+	margin-bottom:10px;
+}
 
-#simplemodal-overlay {background-color:#000;}
-#simplemodal-container {background-color:#333; border:8px solid #444; padding:12px;}
+#simplemodal-overlay {background-color:#777;}
+#simplemodal-container {background-color:#85d949; border:8px solid #51B906; padding:12px;}
 
 #del_dialog .buttons div{
 	background-image:url(../images/dialog_button.gif); 
@@ -42,4 +87,19 @@ table tr td p{
 	margin-left: 4px;
 	text-align: center;
 	width: 70px;
+}
+
+#buttom_op div{
+	background: url(../images/admin_list_articles_css_img/graygradient.png) top left repeat-x;
+	height: 25px;
+	width: 120px;
+	float: left;
+	margin: 5px;
+	text-align: center;
+	padding-top: 5px;
+	cursor: pointer;
+}
+
+#buttom_op_clear{
+	clear:both;
 }

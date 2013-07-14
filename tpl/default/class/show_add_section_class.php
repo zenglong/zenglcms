@@ -12,9 +12,11 @@ if(file_exists($filecache) && ( filemtime($filecache) > filemtime($filetpl) ) &&
 else
 {
 	$tpl = new tpl($filetpl, $filecache);
+	$tpl->setVar('theme', 'echo $zengl_cms_tpl_dir . $zengl_theme',true);
 	$tpl->setVar('title', 'echo $title',true);
 	$tpl->setVar('action_loc', $zengl_cms_rootdir . 'add_del_edit_section.php?action=add');
 	$tpl->setVar('options', '$this->recursive_show_options(1,4);',true);
+	$tpl->template_parse();
 	$tpl->cache();
 	include $tpl->filecache;
 }

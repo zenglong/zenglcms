@@ -48,6 +48,10 @@ else if($rvar_arg=="showright")
 {
 	$admin->show_right();
 }
+else if($rvar_arg=="show_middle")
+{
+	$admin->show_middle();
+}
 else
 	new error('进入管理界面失败','无效的请求参数！',true,true);
 ?>

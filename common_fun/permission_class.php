@@ -89,8 +89,10 @@ class permis
 	var $sql;
 	var $isTourist = true;
 	var $gen_permis;
-	function __construct($use_session,$use_sql)
+	var $progress;
+	function __construct($use_session = false,$use_sql = false)
 	{
+		$this->progress = new progress();
 		if($use_session)
 		{
 			$this->set_sess($use_session);
@@ -100,6 +102,34 @@ class permis
 			$this->sql = $use_sql;
 		}
 	}
+	
+	/*
+	 * 输出进度条的开头
+	* 参数$title 标题和初始进度名
+	* 参数$total 总共需要操作的记录数
+	* */
+	function progress_begin($title,$total)
+	{
+		$this->progress->begin($title, $total);
+	}
+	
+	/*
+	 * 输出进度条
+	* 参数$msg 进度条的消息
+	* */
+	function progress($msg,$isNeedAddProgress = true)
+	{
+		$this->progress->step($msg,$isNeedAddProgress);
+	}
+	
+	/*
+	 * 输出进度条结束
+	* 参数$msg 进度条的消息*/
+	function progress_end($msg,$isNeedAddLog = true)
+	{
+		$this->progress->end($msg,$isNeedAddLog);
+	}
+	
 	function set_sess($use_session)
 	{
 		$this->session = $use_session;
@@ -122,7 +152,7 @@ class permis
 	{
 		return serialize($this->gen_permis);
 	}
-	function check_perm($permis,$dest)
+	function check_perm($permis,$dest = null)
 	{
 		if($this->session->userLevel == 1) //superuser超级管理员用户
 			return true;
@@ -194,15 +224,18 @@ class permis
 		if($this->sql == null)
 			$this->sql = new sql('utf8');
 		$sql = &$this->sql;
+		$this->progress_begin('准备更新权限', 3);
 		$orig_permis_admin = $permis_admin;
 		$permis_admin = $sql->escape_str($permis_admin);
 		$sql->query("update $sql->tables_prefix" . "level set permission = '$permis_admin'
 					where levelname = '系统管理员'");
+		$this->progress('更新完系统管理员组的权限信息');
 		$orig_permis_reg = $permis_reg;
 		$permis_reg = $sql->escape_str($permis_reg);
 		$sql->query("update $sql->tables_prefix" . "level set permission = '$permis_reg'
 					where levelname = '高级用户' or levelname = '中级用户' or
 					levelname = '初级注册用户'");
+		$this->progress('更新完高级用户组，中级用户组，初级用户组的权限信息');
 		if ($sql->err == SQL_SUCCESS)
 		{
 			if($this->session == null)
@@ -218,7 +251,7 @@ class permis
 				$_SESSION['levelPermis'] =$orig_permis_reg;
 			}
 			$this->session->get_userinfo();
-			echo "<br/>更新权限成功！<br/>";
+			$this->progress_end("更新权限成功！");
 		}
 		else
 			die("未知错误，更新权限失败！");

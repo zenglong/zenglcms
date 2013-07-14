@@ -35,25 +35,18 @@ $(document).ready(function() {
 						$(this).html(times--);
 				}
 		  });
-		  $('#content a').mouseover(function(){
-		  		//$('#timer').stopTime('start').html("跳转计时停止，请选择去向！");
-		  		is_stop = true;
-		  });
-		  $('#content a').mouseout(function(){
-		  		is_stop = false;
-		  });
-		  $('#timer').mouseover(function(){
-		  		/*if(!is_stop)
-		  		{
-			  		$('#timer').stopTime('start').html("跳转计时停止，请选择去向:" + 
-			  						"<a href = 'javascript:history.go(-1);'>返回前一页</a>&nbsp;&nbsp" + 
-			  						"<a href='{zengl cms_root_dir}index.php'>goto 首页</a>");
-			  		is_stop = true;
-			  	}*/
-			  	is_stop = true;
-		  });
-		   $('#timer').mouseout(function(){
-		  		is_stop = false;
+		  $("#start_stop_timer").click(function(){
+				if(is_stop == false)
+				{
+					is_stop = true;
+					$("#start_stop_timer").text('继续数秒');
+				}
+				else
+				{
+					is_stop = false;
+					$("#start_stop_timer").text('暂停数秒');
+				}
+				return false;
 		  });
 	});
 </script>
@@ -61,19 +54,19 @@ $(document).ready(function() {
 </head>
 <body>
 <div id = 'main'>
-	<div id = "main_head">
-	</div>
+	<!--<div id = "main_head">
+	</div>-->
 	<div id = "main_mid">
 		<div id="title">
 			{zengl title}
 		</div>
-		<div id = 'content'>{zengl content} <br/><br/>(鼠标划到下面链接上或秒数上可暂停数秒)<br/> <br/>
+		<div id = 'content'>{zengl content} <br/>
 		{zengl jmp_locs} <br/><br/>
-		<span id='timer'></span>秒后跳转到第一个链接或返回前页..
+		<span id='timer'></span>秒后跳转到第一个链接或返回前页..<a id="start_stop_timer" href="#">暂停数秒</a>
 		</div>
 	</div>
-	<div id = "main_last">
-	</div>
+	<!--<div id = "main_last">
+	</div>-->
 </div>
 </body>
 </html>

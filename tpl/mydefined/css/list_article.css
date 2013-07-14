@@ -1,0 +1,60 @@
+/* body{
+	text-align:center;
+} */
+#maindiv{
+	/*width:700px;*/
+	width:930px;
+	margin:0 auto;
+	/*text-align:left;*/
+}
+#user_area{
+	margin-bottom: 20px;
+}
+#section_input{
+	margin-bottom: 20px;
+}
+#article{
+	width: 700px;
+	font-size:12pt;
+	/*height: 560px;*/
+}
+#article div{
+	width: 700px;
+	height: 230px;
+	/* *height: 280px; */
+	padding-top:80px;
+	padding-left:30px;
+	background-image:url(../images/list_article_css_img/paper2.jpg);
+	background-repeat: no-repeat;
+}
+#article div span{
+	display:block;
+	padding-bottom: 2px;
+}
+a{
+	text-decoration:none;
+}
+#tags{
+	clear:both;
+}
+#recommend_articles{
+	background-color:#000;
+	margin-top: 37px;
+}
+#recommend_articles a,#recommend_articles a:link,#recommend_articles a:visited,#recommend_articles a:active {
+	color:white;
+}
+#recommend_articles a:hover{
+	color:black;
+	background-color:white;
+}
+#recommend_title{
+color:white;
+font-weight:bold;
+padding-top:10px;
+margin-bottom:10px;
+display:block;
+}
+.jPaginate{
+	width: 627px;
+}

@@ -44,14 +44,17 @@ else if($rvar_action == 'setconfig')
 else if($rvar_action == 'install4')
 {
 	$db = new db(new sql('utf8'));
+	$db->progress = null;
+	$db->progress = new progress();
+	$db->progress->begin('准备创建数据库', 2);
 	$db->create_db_tables();
 	$cache = new cache();
+	$cache->progress = null;
+	$cache->progress = &$db->progress;
 	$cache->clear_caches();
 	touch('install/install.lock');
-	echo '<br/>生成install.lock安装锁,防止再次误安装<br/>';
-	echo '<br/>';
-	echo '<a href="adminLogin/admin_login.php" target="_blank">从后台登录</a>&nbsp;&nbsp;&nbsp;&nbsp;' . 
-		  '<a href = "index.php" target="_blank">访问首页的动态页面</a>';
+	$db->progress->end("生成install.lock安装锁,防止再次误安装&nbsp;&nbsp;<a href='adminLogin/admin_login.php' target='_blank'>从后台登录</a>&nbsp;&nbsp;&nbsp;&nbsp;" . 
+		  "<a href = 'index.php' target='_blank'>访问首页的动态页面</a>",false);
 }
 else if($rvar_action == 'install3')
 	$install->ShowSetConfig();

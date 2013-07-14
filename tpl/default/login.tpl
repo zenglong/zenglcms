@@ -38,8 +38,8 @@
 </head>
 <body>
 <div id = 'main'>
-	<div id = "main_head">
-	</div>
+	<!--<div id = "main_head">
+	</div>-->
 	<div id = "main_mid">
 		<div id="title">
 			{zengl title} &nbsp;&nbsp;&nbsp;&nbsp; <a href='{zengl retloc}'>&nbsp;返回来页&nbsp;</a>
@@ -60,8 +60,8 @@
 			</form>
 		</div>
 	</div>
-	<div id = "main_last">
-	</div>
+	<!--<div id = "main_last">
+	</div>-->
 </div>
 </body>
 </html>

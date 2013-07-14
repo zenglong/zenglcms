@@ -12,18 +12,19 @@ if(file_exists($filecache) && ( filemtime($filecache) > filemtime($filetpl) ) &&
 	return;
 }
 $tpl = new tpl($filetpl, $filecache);
+$tpl->setVar('theme', 'echo $zengl_cms_tpl_dir . $zengl_theme',true);
 $tpl->setVar('title', 'echo $title',true);
 $tpl->setVar('action', 'echo "\'config_operate.php\'";',true);
 $tpl->setVar('dbtype_options', '
 		if($db_type == SQLITE)
 		{
-			echo "<option value=\'0\' selected=\'selected\'>sqlite</option>";
-			echo "<option value=\'1\'>mysql</option>";
+			echo "<option value=\'0\' selected=\'selected\'> Sqlite 本地文件数据库类型 </option>";
+			echo "<option value=\'1\'> MySql 服务型数据库类型 </option>";
 		}
 		else
 		{
-			echo "<option value=\'0\'>sqlite</option>";
-			echo "<option value=\'1\' selected=\'selected\'>mysql</option>";
+			echo "<option value=\'0\'> Sqlite 本地文件数据库类型 </option>";
+			echo "<option value=\'1\' selected=\'selected\'> MySql 服务型数据库类型 </option>";
 		}
 		',true);
 $tpl->setVar('mysql_hostname', 'echo htmlspecialchars($db_hostname)',true);
@@ -65,6 +66,7 @@ $tpl->setVar('zengl_cms_comment_shownum', 'echo htmlspecialchars($zengl_cms_comm
 $tpl->setVar('zengl_index_sec_count', 'echo htmlspecialchars($ZlCfg_IndexSecCount)',true);
 $tpl->setVar('zengl_index_article_count', 'echo htmlspecialchars($ZlCfg_IndexArticleCount)',true);
 $tpl->setVar('zengl_list_article_count', 'echo htmlspecialchars($ZlCfg_ListArticleCount)',true);
+$tpl->template_parse();
 $tpl->cache();
 include $filecache;
 ?>

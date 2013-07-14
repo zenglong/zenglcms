@@ -433,38 +433,38 @@ class comment{
 	}
 	function getsome()
 	{
-		global $zengl_cms_rootdir;
-		global $rvar_isfromhtml;
-		$sql = &$this->sql;
-		$tablename = "{$sql->tables_prefix}comment";
-		$table_article = "{$sql->tables_prefix}articles";
-		$sql->query("select $tablename.content as content,$tablename.articleID as articleID, " . 
-				" $table_article.sec_ID as sec_ID from $tablename left join $table_article " . 
-				" on $tablename.articleID = $table_article.articleID order by $tablename.showtime desc" .
-				" limit 0,5");
-		if($sql->get_num()<=0)
-			die('<span>暂无评论</span>');
-		$article = new article();
-		$magic_quote = get_magic_quotes_gpc();
-		$output = '<span class="comment_head">最新评论：</span>';
-		while($sql->parse_results())
+		global $zengl_cms_tpl_dir;
+		global $zengl_theme;
+		global $zengl_old_theme;
+		if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_theme . '/class/getsome_comments_class.php'))
+			return include $zengl_theme_tpl_class;
+		else if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_old_theme .
+				'/class/getsome_comments_class.php'))
 		{
-			if($rvar_isfromhtml == 'yes')
-			{
-				$sec_path = $article->GetSecDirFullPath($sql->row["sec_ID"]);
-				$output .= '<span class="comment_content"><a href="' . $zengl_cms_rootdir . $sec_path . '/article-' . 
-					  	 	$sql->row["articleID"] . '.html" title="点击查看详情">';
-			}
-			else
-				$output .= '<span class="comment_content"><a href="' . $zengl_cms_rootdir . "add_edit_del_show_list_article.php?hidden=show&articleID=" .
-						$sql->row["articleID"] . '" title="点击查看详情">';
-			if(empty($magic_quote))
-				$output .= subUTF8(strip_tags($sql->row["content"]),32);
-			else
-				$output .=subUTF8(strip_tags(stripslashes($sql->row["content"])),32);
-			$output .= '</a></span>';
+			$zengl_theme = $zengl_old_theme;
+			return include $zengl_theme_tpl_class;
 		}
-		echo $output;
+		else
+			die('tpl class file getsome_comments_class.php does not exist!');
+	}
+	/**
+	 * 在网页前端，显示评论列表
+	 */
+	function get_list()
+	{
+		global $zengl_cms_tpl_dir;
+		global $zengl_theme;
+		global $zengl_old_theme;
+		if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_theme . '/class/list_comments_class.php'))
+			return include $zengl_theme_tpl_class;
+		else if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_old_theme .
+				'/class/list_comments_class.php'))
+		{
+			$zengl_theme = $zengl_old_theme;
+			return include $zengl_theme_tpl_class;
+		}
+		else
+			die('tpl class file list_comments_class.php does not exist!');
 	}
 }
 ?>

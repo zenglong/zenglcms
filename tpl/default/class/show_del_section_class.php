@@ -19,6 +19,7 @@ else
 	$tpl->setVar('action_edit', '"edit"');
 	//$sec_array_js_str = js_array($this->all, 'sec_array');
 	$tpl->setVar('sec_array', 'echo js_array($this->all, \'sec_array\');',true);
+	$tpl->template_parse();
 	$tpl->cache();
 	include $tpl->filecache;
 }

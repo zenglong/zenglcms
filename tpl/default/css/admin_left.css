@@ -1,5 +1,12 @@
+body{
+	background:#a1ff80;
+}
+#menu_fold_unfold{
+	color:white;
+}
 .menu_list {	
 	width: 200px;
+	/*margin-top:55px;*/
 }
 .menu_head {
 	padding: 5px 10px;
@@ -7,20 +14,33 @@
 	position: relative;
 	margin:1px;
     font-weight:bold;
-    background: #eef4d3 url(../images/admin_left_css_img/left.png) center right no-repeat;
+   /* background: #eef4d3 url(../images/admin_left_css_img/left.png) center right no-repeat;*/
+	background: #eef4d3 url(../images/admin_left_css_img/greenblock.png) no-repeat;
+	border-radius: 0 10px 10px 0;
+    box-shadow: 5px 2px 3px rgba(160, 160, 160, 0.98), -9px 0 10px rgba(200, 228, 178, 0.5) inset;
+    color: white;
+    font: bold 110% Arial;
+    margin-bottom: 3px;
+    padding: 3px 2px;
+    text-align: center;
 }
 .menu_body {
 	display:none;
 }
 .menu_body a{
   display:block;
-  color:#006699;
-  background-color:#EFEFEF;
+  /*color:#006699;*/
+  color: #449805;
+  /*background-color:#EFEFEF;*/
+  background: url(../images/admin_left_css_img/graygradient.png) top left repeat-x;
   padding-left:30px;
   font-weight:bold;
   text-decoration:none;
+  height: 28px;
+  padding-top: 10px;
 }
 .menu_body a:hover{
-  color: #000000;
-  text-decoration:underline;
-  }
+  color: #fff;
+  background: #51B906;
+  text-decoration: none;
+}

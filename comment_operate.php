@@ -137,6 +137,8 @@ else if($rvar_action == 'admin_set_reply_num')
 }
 else if($rvar_action == 'getsome')
 	$comment->getsome();
+else if($rvar_action == 'get_list')
+	$comment->get_list();
 else
 	new error('评论操作失败','无效的请求参数！',true,true);
 ?>

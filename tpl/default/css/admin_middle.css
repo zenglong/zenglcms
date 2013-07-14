@@ -1,0 +1,27 @@
+body {
+	background: #EBF0F6;
+	color: #000000;
+	font-size: 12px;
+	margin: 0px;
+	height: 100%;
+}
+html{height:100%;}
+.side {
+	width: 7px;
+	height: 100%;
+	font-size: 1px;
+	background: #E3ECF7 url('../images/admin_middle_css_img/side.gif') repeat-y;
+	cursor: pointer;
+}
+
+.side_on {
+	width: 7px;
+	height: 51px;
+	background: url('../images/admin_middle_css_img/side_off.gif') no-repeat 1px center;
+}
+
+.side_off {
+	width: 7px;
+	height: 51px;
+	background: url('../images/admin_middle_css_img/side_on.gif') no-repeat 1px center;
+}

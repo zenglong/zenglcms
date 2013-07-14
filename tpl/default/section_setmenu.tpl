@@ -19,19 +19,55 @@ $(document).ready(function() {
 		});
 </script>
 <title>{zengl title}</title>
+<style>
+table{
+	width:100%;
+}
+tr td{
+	background:#c7fab5;
+}
+tr .first_td{
+	width:300px;
+}
+#header_title{
+	font-size:18px;
+	background:#c7fab5;
+	margin-bottom:10px;
+}
+</style>
 </head>
 <body>
-<h2>{zengl title}</h2>
-	<form action={zengl action_loc} method="post">
-		栏目：
-		<select name="secID" id='secID'>
-			{zengl options}
-		</select> <br/>
-		所属父栏目：<span id='parentSec'></span> <br/>
-		输入该栏目在父栏目中要调整的位置：<input type="text" name="position" value='' /> <br/>
-		(如果想要该栏目位于父栏目第一个位置就输入1，以此类推！)
-		<input type="submit" value="提交" />
-		<input type="hidden" name="action" id="action" value='setmenu' />
-	</form>
+<div id="header_title">{zengl title}</div>
+<form action={zengl action_loc} method="post">
+<table>
+<tbody>
+	<tr>
+		<td class="first_td">栏目：</td>
+		<td>
+			<select name="secID" id='secID'>
+				{zengl options}
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td class="first_td">所属父栏目：</td>
+		<td><span id='parentSec'></span></td>
+	</tr>
+	<tr>
+		<td class="first_td">输入该栏目在父栏目中要调整的位置：</td>
+		<td><input type="text" name="position" value='' /></td>
+	</tr>
+	<tr>
+		<td colspan="2">(如果想要该栏目位于父栏目第一个位置就输入1，以此类推！)</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<input type="submit" value="提交" />
+		</td>
+	</tr>
+</tbody>
+</table>
+<input type="hidden" name="action" id="action" value='setmenu' />
+</form>
 </body>
 </html>

@@ -136,24 +136,30 @@ $(document).ready(function() {
 				                     		} 
 	    					}); 
 	    					
-	  $(".widelink_content a,#set_comment_list").hover(function(){
-							$(this).css({"background":'red'});
-						},function(){
-							$(this).css({"background":'black'});
-						}).css({"background":'black',"color":'white'}).prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
-	  $(".widelink a").hover(function(){
-							$(this).css({"background":'red'});
-						},function(){
-							$(this).css({"background":'#f389ca'});
-						}).css({"background":'#f389ca',"color":'white'}).prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+	  $(".widelink_content a,#set_comment_list").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+	  $(".widelink a").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+	  $("#comments table tr").hover(function(){
+				$(this).addClass("td_hover");
+				$(this).find("a").css({"color":'#fff'});
+			},function(){
+				$(this).removeClass("td_hover");
+				$(this).find("a").css({"color":'#000'});
+		});
 	  $('.comment_table').tablesorter(); 
+	  $('#buttom_op div').hover(function(){
+			$(this).css({"background":'url({zengl theme}/images/admin_list_articles_css_img/greengradient.png) repeat-x',"color":'#fff'});
+			$(this).find("a").css({"color":'#fff'});
+		},function(){
+			$(this).css({"background":'url({zengl theme}/images/admin_list_articles_css_img/graygradient.png) top left repeat-x',"color":'#000'});
+			$(this).find("a").css({"color":'#000'});
+		});
 	});
 </script>
 <title>{zengl title}</title>
 </head>
 <body>
 <div id = "maindiv">
-	<h2>{zengl title}</h2>
+	<div id="header_title">{zengl title}</div>
 	<input type='text' value='{zengl comment_list_num}' id='comment_list_num' size='5' />&nbsp;&nbsp;
 	<a href='#' id='set_comment_list'>设置显示数目</a> &nbsp;&nbsp; 当前:{zengl current_num}/共:{zengl totalnum}
 	<div class="comments">
@@ -173,7 +179,7 @@ $(document).ready(function() {
 					<td class='comment_td'><a href={zengl username_a}>{zengl username}</a></td>
 					<td class='comment_td'><a href={zengl nickname_a}>{zengl nickname}</a></td>
 					<td class='comment_td'>{zengl time}</td>
-					<td class='comment_td'><a href={zengl comment_del} class='del_comment'>删除</a>/<a href={zengl comment_reply} class='reply_comment'>回复</a></td>
+					<td class='comment_td'><a href={zengl comment_reply} class='reply_comment' title="回复"><img src="{zengl theme}/images/admin_list_articles_css_img/edit.jpg" width="23"></a>&nbsp;<a href={zengl comment_del} class='del_comment' title="删除"><img src="{zengl theme}/images/admin_list_articles_css_img/del.jpg" width="23"></a></td>
 					<td class='comment_td'><input class='articleID' type='hidden' value="{zengl articleID}" /></td>
 				</tr>
 				{zengl endfor}
@@ -181,11 +187,12 @@ $(document).ready(function() {
 			</table>
 		</div>
 		<div id="buttom_op" class = 'widelink'>
-			<a id='selectAll' href='#'>全选</a>
-			<a id='unselect' href='#'>取消选择</a>
-			<a id='multidel' href='#'>批量删除</a>
-			<a id='clearCache' href='#'>清除缓存</a>
+			<div id='selectAll'>全选</div>
+			<div id='unselect'>取消选择</div>
+			<div id='multidel'>批量删除</div>
+			<div id='clearCache'>清除缓存</div>
 		</div>
+		<div id="buttom_op_clear"></div>
 		<div id="pages"></div>
 	</div>
 	

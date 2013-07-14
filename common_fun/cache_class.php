@@ -22,11 +22,40 @@
 */
 class cache
 {
+	var $progress;
 	function __construct()
 	{
+		$this->progress = new progress();
 		//global $zengl_cms_tpl_dir;
 		//$this->tpl = new tpl($zengl_cms_tpl_dir . 'clear_filecache.tpl',$zengl_cms_tpl_dir . 'clear_filecache_cache.php');
 	}
+	/*
+	 * 输出进度条的开头
+	 * 参数$title 标题和初始进度名
+	 * 参数$total 总共需要操作的记录数
+	 * */
+	function progress_begin($title,$total)
+	{
+		$this->progress->begin($title, $total);
+	}
+	
+	/*
+	 * 输出进度条
+	 * 参数$msg 进度条的消息
+	 * */
+	function progress($msg,$isNeedAddProgress = true)
+	{
+		$this->progress->step($msg,$isNeedAddProgress);
+	}
+	
+	/*
+	 * 输出进度条结束
+	* 参数$msg 进度条的消息*/
+	function progress_end($msg,$isNeedAddLog = true)
+	{
+		$this->progress->end($msg,$isNeedAddLog);
+	}
+	
 	function clear_tpl_cache($tpl)
 	{
 		$dirhandle = opendir($tpl);
@@ -38,10 +67,10 @@ class cache
 			{
 				unlink($tpl . '/' . $tpl_cache);
 				$cachenum++;
-				echo "&nbsp;&nbsp;$cachenum 删除 $tpl 目录的 $tpl_cache 文件<br/>";
+				$this->progress("$cachenum 删除 $tpl 目录的 $tpl_cache 文件");
 			}
 		}
-		echo "&nbsp;&nbsp;共删除 $tpl 目录下 $cachenum 个缓存文件<br/>";
+		$this->progress("共删除 $tpl 目录下 $cachenum 个缓存文件");
 	}
 	function clear_file_cache($file_cache_dir)
 	{
@@ -54,15 +83,37 @@ class cache
 			{
 				unlink($file_cache_dir . '/' . $file_cache);
 				$cachenum++;
-				echo "&nbsp;&nbsp;$cachenum 删除 $file_cache_dir 目录的 $file_cache 文件<br/>";
+				$this->progress("$cachenum 删除 $file_cache_dir 目录的 $file_cache 文件");
 			}
 		}
-		echo "&nbsp;&nbsp;共删除 $file_cache_dir 目录下 $cachenum 个缓存文件<br/>";
+		$this->progress("共删除 $file_cache_dir 目录下 $cachenum 个缓存文件");
 	}
 	function clear_caches($tpl,$file_cache_dir,$del_sec_cache=true)
 	{
 		global $zengl_cms_tpl_dir;
-		global $zengl_theme;
+		global $zengl_cms_filecache_dir;
+		$tpl = $zengl_cms_tpl_dir . 'cache';
+		if($this->progress->isBegin)
+			$has_begin_prev = true;
+		else
+			$has_begin_prev = false;
+		$this->progress_begin('准备清理缓存', 5);
+		$this->clear_tpl_cache($tpl);
+		$this->clear_tpl_cache($tpl . "/comment_cache");
+		$file_cache_dir = substr($zengl_cms_filecache_dir,0,-1);
+		$this->clear_file_cache($file_cache_dir);
+		$tmpsec = new section();
+		if(file_exists($tmpsec->array_file))
+		{
+			unlink($tmpsec->array_file);
+			$this->progress("删除栏目缓存文件$tmpsec->array_file");
+		}
+		if($has_begin_prev)
+			$this->progress("缓存清理完毕");
+		else
+			$this->progress_end("缓存清理完毕");
+		
+		/*global $zengl_theme;
 		global $zengl_old_theme;
 		if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_theme . '/class/clear_caches_class.php'))
 			include_once $zengl_theme_tpl_class;
@@ -73,7 +124,7 @@ class cache
 			include_once $zengl_theme_tpl_class;
 		}
 		else
-			die('tpl class file clear_caches_class.php does not exist!');
+			die('tpl class file clear_caches_class.php does not exist!');*/
 	}
 	function clear_comment_cache()
 	{

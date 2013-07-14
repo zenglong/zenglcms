@@ -1,81 +1,43 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<!-- /** 该模板是显示文章列表的模板，for_articles标签会被替换为读取mysql返回的results集合的while循环，
-	 endfor 将被替换为'}'作为while循环的结束， article_title会被替换为结果集中的某行记录的title数据，
-	 也就是某文章的标题。
-	 不过要特别注意的是由于目前使用的是简单的str_replace替换(执行效率高些)，所以标签中的空格只能有一个，以后会考虑用正则表达式来处理该问题。
-	 其实空格的多少以及标签如何定义完全可以在list_articles.php文件里的str_replace函数中自由的定义，所以也不算是个问题。
-	 还有个要注意的是不要在注释里用完整的标签，因为这些标签也会被替换，就会发生错误！
-	 作者：zenglong
-	 创建时间：2011年12月14日 */ 
--->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-<link rel="stylesheet" type="text/css" href="{zengl theme}/css/superfish.css" media="screen">
-<link rel="stylesheet" type="text/css" href="{zengl theme}/css/style.css" media="screen">
-<link rel="stylesheet" type="text/css" href="{zengl theme}/css/colorbox.css" media="screen">
-<link rel="stylesheet" type="text/css" href="{zengl theme}/css/tip-yellowsimple.css" media="screen">
-<link rel="stylesheet" type="text/css" href="{zengl theme}/css/list_article.css" media="screen">
-<script type="text/javascript" src="{zengl theme}/js/jquery-1.7.1.js"></script>
-<script type="text/javascript" src="{zengl theme}/js/hoverIntent.js"></script>
-<script type="text/javascript" src="{zengl theme}/js/superfish.js"></script>
-<script type="text/javascript" src="{zengl theme}/js/jquery.paginate.js"></script> 
-<script type="text/javascript" src="{zengl theme}/js/jquery.colorbox-min.js"></script> 
-<script type="text/javascript" src="{zengl theme}/js/jquery.poshytip.min.js"></script>
-{zengl sec_array}
+{if !$flaghtml}
+	{php $mytheme_path = $zengl_cms_tpl_dir . $zengl_theme;}
+{else}
+	{php $mytheme_path = $zengl_cms_rootdir . $zengl_cms_tpl_dir . $zengl_theme;}
+{/if}
+
+{php $secId = $rvar_sec_ID;}
+{if isset($this->all[$secId])}
+	{if $this->all[$secId]["sec_dirpath"] != ""}
+		{php $sec_dirpath = "html/" . $this->all[$secId]["sec_dirpath"] . "/" . $this->all[$secId]["sec_dirname"];}
+	{else}
+		{php $sec_dirpath = "html/" . $this->all[$secId]["sec_dirname"];}
+	{/if}
+{else}
+	{php $sec_dirpath = "";}
+{/if}
+<link rel="stylesheet" type="text/css" href="{$mytheme_path}/css/superfish.css" media="screen">
+<link rel="stylesheet" type="text/css" href="{$mytheme_path}/css/style.css" media="screen">
+<link rel="stylesheet" type="text/css" href="{$mytheme_path}/css/colorbox.css" media="screen">
+<link rel="stylesheet" type="text/css" href="{$mytheme_path}/css/tip-yellowsimple.css" media="screen">
+<link rel="stylesheet" type="text/css" href="{$mytheme_path}/css/list_article.css" media="screen">
+<script type="text/javascript" src="{$mytheme_path}/js/jquery-1.7.1.js"></script>
+<script type="text/javascript" src="{$mytheme_path}/js/hoverIntent.js"></script>
+<script type="text/javascript" src="{$mytheme_path}/js/superfish.js"></script>
+<script type="text/javascript" src="{$mytheme_path}/js/jquery.paginate.js"></script> 
+<script type="text/javascript" src="{$mytheme_path}/js/jquery.colorbox-min.js"></script> 
+<script type="text/javascript" src="{$mytheme_path}/js/jquery.poshytip.min.js"></script>
 <script type="text/javascript">
-var ishtml = '{zengl ishtml}';
 var sec_dirpath = '';
 $(document).ready(function() {
-		if(ishtml == 'yes')
-			$('#section_input').hide();
-		$('.admin_editdel').hide();
-		$("#sec_ID").change(function() {
-					if($('#isrecur')[0].checked)
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=list&sec_ID='+$(this)[0].value+'&is_recur='+$('#isrecur')[0].value;
-					else
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=list&sec_ID='+$(this)[0].value+'&is_recur=no';
-						});
-		$('#isrecur').change(function(){
-					if($(this)[0].checked)
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=list&sec_ID='+$("#sec_ID")[0].value+'&is_recur='+$(this)[0].value;
-					else
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=list&sec_ID='+$("#sec_ID")[0].value+'&is_recur=no';
-						});
 		$('ul.sf-menu').superfish();
-		$('ul.sf-menu a').click(function(){
-					s = $(this)[0].href;
-					s = s.substr(s.lastIndexOf('/')+1);
-					if(isNaN(s))
-					{
-						location.href = $(this)[0].href;
-						return false;
-					}
-					
-					if(ishtml == 'yes')
-					{
-						if(sec_array[s]['sec_dirpath'] != '')
-							sec_dirpath = 'html/' + sec_array[s]['sec_dirpath'] + '/' + 
-											sec_array[s]['sec_dirname'];
-						else
-							sec_dirpath = 'html/' + sec_array[s]['sec_dirname'];
-						location.href='{zengl cms_root_dir}' + sec_dirpath + '/';
-						return false;
-					}
-					if($('#isrecur')[0].checked)
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=list&sec_ID='+s+'&is_recur='+$('#isrecur')[0].value;
-					else
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=list&sec_ID='+s+'&is_recur=no';
-					return false;
-						});
 		function list_articles()
 		{
-			//li_num = $('#article ol li').size();
 			li_num = $('#article span').size();
 			want_num = 7;
-			//margin_top = 140;
 			img_num = Math.ceil(li_num / want_num);
-			//$('#article').css("height",img_num * 280 + "px");
 			for(i=0,j=0;i<img_num;i++,j=0)
 			{
 				j+=i * want_num;
@@ -84,19 +46,15 @@ $(document).ready(function() {
 				{
 					$('#article span:eq(' + tmp + ')').appendTo('#article_li_' + j);
 				}
-				/*if ($.browser.msie) {
-					if ($.browser.version == "6.0") 
-						$('#article_li_' + j).css('padding-bottom','80px');
-				}*/
 			}
 		}
 		list_articles();
-		sec_pagenum = {zengl sec_PageNum};
+		sec_pagenum = {ceil($sql->rownum/$this->page_size)};
 		if(sec_pagenum > 0)
 			$("#pages").paginate({ 
-				        count    : {zengl sec_PageNum} {zengl sec_query}, 
+				        count    : sec_pagenum {php $sql->query($sql->sql_desc . " limit 0,$this->page_size");}, 
 				        start    : 1, 
-				        display  : {zengl sec_DisplaySize}, 
+				        display  : {$this->display_size},
 				        //border                    : true, 
 				        //border_color            : '#BEF8B8', 
 				        //text_color              : '#79B5E3',
@@ -111,78 +69,122 @@ $(document).ready(function() {
 				        images                    : false, 
 				        mouse                    : 'press', 
 				        onChange      : function(sec_page){ 
-					        					if($('#isrecur')[0].checked)
-					        					  $isrecur =  $('#isrecur')[0].value;
-					        					else
-					        					  $isrecur = "no";
-					        					  if($('#tags').length<=0)
-					        					  {
-					        					  	  if(ishtml == 'yes')
-					        					  	  {
-					        					  	  	  sec_dirpath = '{zengl sec_dirpath}';
-					        					  	  	  if(sec_page != 1)
-					        					  	  	  	loadstr = '{zengl cms_root_dir}' + sec_dirpath + '/index-' + sec_page + '.html';
-					        					  	  	  else
-					        					  	  	  {
-					        					  	  	  	location.href = '{zengl cms_root_dir}' + sec_dirpath + '/';
-					        					  	  	  	return false;
-					        					  	  	  }
-					        					  	  }
-					        					  	  else
-							        					  loadstr = "{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=listajax&sec_ID=" + 
-							                          	 $("#sec_ID")[0].value + '&is_recur=' + $isrecur + 
-							                          	 '&sec_page=' + sec_page;
-						                          }
-						                       else
-						                       	  loadstr = "{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=listajax&tag=" + 
-						                           	 {zengl tagid} + '&sec_page=' + sec_page;
-					                           $("#article").load(loadstr, 
-										                          function(response, status, xhr) {
-										                          		 $('.admin_editdel').hide();
-										                          		 list_articles();
-										                          		 set_a_style();
-										                          		 $('.tip-yellowsimple').remove();
-									                          		 	 $('.article_title').poshytip({
-																				className: 'tip-yellowsimple',
-																				bgImageFrameSize: 11,
-																				offsetX: -25 
-																				});
-										                          	  });
-				                     		} 
-	    					}); 
+								/*if($('#isrecur')[0].checked)
+									$isrecur =  $('#isrecur')[0].value;
+								else
+									$isrecur = "no";*/
+								$isrecur = "yes"; //默认递归显示子栏目内容
+								if((query_value = encodeURI($('#query_word_hidden')[0].value)) != '')
+									query_value = '&keyword=' + query_value;
+								else
+									query_value = '';
+								if($('#tags').length<=0 && query_value == '')
+								{
+									  {if $adminHtml_genhtml == 'yes'}
+										  sec_dirpath = '{$sec_dirpath}';
+										  if(sec_page != 1)
+											loadstr = '{$zengl_cms_rootdir}' + sec_dirpath + '/index-' + sec_page + '.html';
+										  else
+										  {
+											location.href = '{$zengl_cms_rootdir}' + sec_dirpath + '/';
+											return false;
+										  }
+									  {else}
+										  loadstr = "{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=listajax&sec_ID=" + 
+													{$rvar_sec_ID} + '&is_recur=' + $isrecur + 
+													'&sec_page=' + sec_page;
+									  {/if}
+								}
+								else if(query_value != '')
+								{
+									type = $('input[name=query_type]:checked').val();
+									loadstr = "{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=listajax" + 
+												query_value + '&query_type=' + type + '&sec_page=' + sec_page;
+								}
+								else
+									loadstr = "{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=listajax&tag=" + 
+												{$rvar_tag} + '&sec_page=' + sec_page;
+								$("#article").load(loadstr, 
+												  function(response, status, xhr) {
+														 $('.admin_editdel').hide();
+														 list_articles();
+														 set_a_style();
+														 $('.tip-yellowsimple').remove();
+														 $('.article_title').poshytip({
+																			className: 'tip-yellowsimple',
+																			bgImageFrameSize: 11,
+																			offsetX: -25 
+																			});
+													  });
+							} 
+	    				}); 
 	    $("#article").ajaxSend(function(event, request, settings){
-	    				if(settings.url != '{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=show&articleID=1&isfromhtml=yes')
-        					$(this).html("<img src='{zengl cms_root_dir}images/loading.gif' /> 正在读取。。。");
+	    				if(settings.url != '{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=show&articleID=1&isfromhtml=yes')
+        					$(this).html("<img src='{$zengl_cms_rootdir}images/loading.gif' /> 正在读取。。。");
         				//$('#article').css("height",128 + "px");
         					});
-        is_init_a_style = false;
-       function set_a_style()
-        {
-			$("#menu_id a,.widelink a,.widelink_content a").hover(function(){
+	      is_init_a_style = false;
+
+	    /*由中英文字符串的个数得到字符串的像素宽度*/
+		function getStringWidth(str) {
+			var width = len = str.length;
+			for(var i=0; i < len; i++) {
+				if(str.charCodeAt(i) >= 255) {
+					width++;
+				}
+			}
+			return width * 8 + 'px';
+		}
+
+	    function set_a_style()
+		{
+			$("#menu_id a,.widelink a,.widelink_content a,#query_div a").hover(function(){
 							$(this).css({"background":'red'});
 						},function(){
 							$(this).css({"background":'black'});
 						}).css({"background":'black',"color":'white'});
 			if(!is_init_a_style)
 			{
-				$(".widelink a").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+				$(".widelink a,#query_div a").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+				/*
+					下面先通过调用getStringWidth函数得到菜单中每个菜单项里的文本的字符串宽度，
+					然后根据这个宽度值来设置菜单的像素宽。从而可以达到在各种浏览器下都可以用的菜单换行效果。
+				*/
+				$("#menu_id li a").each(function(i){
+					$(this).css({"width":getStringWidth($(this).text())});
+				});
 				is_init_a_style = true;
 			}
 			$(".widelink_content a").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
 		}
+
 		set_a_style();
 		
 		if($('.more_tags').length>0)
 			$('.more_tags').colorbox({iframe:true, width:"80%", height:"80%"});
-			//$('.more_tags').colorbox({width:"80%", height:"80%"});
 		$('.article_title').poshytip({
 					//className: 'tip-darkgray',
 					className: 'tip-yellowsimple',
 					bgImageFrameSize: 11,
 					offsetX: -25 
 				});
-		if(ishtml == 'yes')
-			$('#user_area').load('{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=show&articleID=1&isfromhtml=yes',
+		
+		$("#query_btn").click(function(){
+					value = encodeURI($('#query_word')[0].value);
+					if(value == '')
+					{
+						alert('请填写关键词');
+						return false;
+					}
+					type = $("input[name='query_type']:checked").val();
+					timestamp=new Date().getTime();
+					location.href = "{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=list&keyword=" + 
+										value + '&query_type=' + type + '&timestamp=' + timestamp;
+					return false;
+				});
+
+		{if $adminHtml_genhtml == 'yes'}
+			$('#user_area').load('{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=show&articleID=1&isfromhtml=yes',
 									function(response, status, xhr){
 										$('#user_area a').prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;").hover(function(){
 																$(this).css({"background":'red'});
@@ -190,40 +192,110 @@ $(document).ready(function() {
 																$(this).css({"background":'black'});
 															}).css({"background":'black',"color":'white'});
 									});
+		{/if}
 	});
 </script>
-<title>{zengl title}</title>
+<title>{$title}</title>
+{if $this->all[$rvar_sec_ID][keyword] != ''}
+<meta name="keywords" content="{$this->all[$rvar_sec_ID][keyword]}">
+{/if}
+{if $this->all[$rvar_sec_ID][sec_description] != ''}
+<meta name="description" content="{str_replace(array("\r","\n","\t","'","\""),"",$this->all[$rvar_sec_ID][sec_description])}"/>
+{/if}
 </head>
 <body>
 <div id = "maindiv">
-{zengl header}
-<div id = "user_area" class = 'widelink'>{zengl username}  {zengl user_operate}  </div> 
-<div id = "section_input">
-	{zengl sections} &nbsp;&nbsp; 
-	<input type="checkbox" name="isrecur" id="isrecur" value="yes" {zengl ischecked}>是否显示子栏目</input>
-	<input type="hidden" name="sec_ID" id="sec_ID" value="{zengl sec_ID}">
-</div>
+{php $this->header();}
+<div id = "user_area" class = 'widelink'>{if !$flaghtml}{$username}{/if}  {if !$flaghtml}{$user_op}{/if}  </div> 
 
-{zengl secmenu} "menu_id" , "sf-menu" {zengl secmenu_end}
+{mytpl_recur_show_secs(&$this,1,1,"menu_id","sf-menu")}
 <br/><br/>
-{zengl tags}
+{if isset($tagstr)}{$tagstr}{/if}
 <br/>
+<div>&nbsp;</div>
+<div id="query_div" style="width:600px;">
+<input type = 'text' id='query_word' value="{$rvar_keyword}" />&nbsp;&nbsp;<a href='#' id='query_btn'>查询</a>
+<input type = 'radio' name = 'query_type' value = '1' id='query_type_title' {if $rvar_query_type==1 || $rvar_query_type == ""}checked='checked'{/if}> <label for='query_type_title'>仅按标题查询</label>
+<input type = 'radio' name = 'query_type' value = '2' id='query_type_content' {if $rvar_query_type==2}checked='checked'{/if}> <label for='query_type_content'>全文查询</label>
+<input type = 'hidden' id='query_word_hidden' value="{$rvar_keyword}" />
+</div>
 
 <div class="article">
+	<table>
+	<tr>
+	<td>
 	<div id="article" class = 'widelink_content'>
-		{zengl for_articles}
+		{while $sql->parse_results()}
+			{php $secId = $sql->row['sec_ID'];}
+			{if isset($this->all[$secId])}
+				{if $this->all[$secId]["sec_dirpath"] != ""}
+					{php $sec_dirpath = "html/" . $this->all[$secId]["sec_dirpath"] . "/" . $this->all[$secId]["sec_dirname"];}
+				{else}
+					{php $sec_dirpath = "html/" . $this->all[$secId]["sec_dirname"];}
+				{/if}
+			{else}
+				{php $sec_dirpath = "";}
+			{/if}
+
+			{php $smimgpath = $sql->row["smimgpath"];}
+			{if $smimgpath == ""}
+				{php $smimgpath = $listshow_article_smimg_default;}
+			{/if}
+			{if !$flaghtml}
+				{if $rvar_keyword != ""}
+					{php $article_loc = $zengl_cms_rootdir . "add_edit_del_show_list_article.php?hidden=show" . "&amp;articleID=" . $sql->row["articleID"] . "&keyword=". urlencode($rvar_keyword);}
+				{else}
+					{php $article_loc = $zengl_cms_rootdir . "add_edit_del_show_list_article.php?hidden=show" . "&amp;articleID=" . $sql->row["articleID"];}
+				{/if}
+			{else}
+				{php $article_loc = $zengl_cms_rootdir . $sec_dirpath . "/article-" . $sql->row["articleID"] . ".html";}
+				{php $smimgpath = $zengl_cms_rootdir . $smimgpath;}
+			{/if}
+			{php $article_title = $sql->row["title"] . "<br/>" . "<img src='$smimgpath'>" . "<br/>" . $sql->row["descript"];}
 		<span>
-			<a href={zengl article_loc} title='{zengl article_tip}' class= 'article_title'>{zengl article_title}</a> &nbsp 
-			{zengl sec_name} &nbsp;&nbsp; {zengl article_time} 
-			<a href={zengl article_edit} class='admin_editdel'>编辑</a>
-			<a href={zengl article_del} class='admin_editdel'>删除</a>
+			<a href="{$article_loc}" title='{htmlentities($article_title,ENT_QUOTES,"utf-8")}' class= 'article_title'>{subUTF8($sql->row["title"],32)}</a> &nbsp; 
+			{$this->all[$sql->row[sec_ID]][sec_name]} &nbsp;&nbsp; {date("Y/n/j G:i:s",$sql->row[time])} 
 		</span>
-		{zengl endfor}
+		{/while}
 	</div>
 	<div id="pages"></div>
+	</td>
+	<td valign="top">
+	<div id="recommend_articles">
+		<span id="recommend_title">站点推荐：</span>
+		{if $sql->db_type == MYSQL}
+			{php $sql->query("select * from " .$sql->tables_prefix . "articles where level=1 order by rand() limit 8");}
+		{else}
+			{php $sql->query("select * from " .$sql->tables_prefix . "articles where level=1 order by random() limit 8");}
+		{/if}
+		<table>
+		{while $sql->parse_results()}
+			{php $secId = $sql->row['sec_ID'];}
+			{if isset($this->all[$secId])}
+				{if $this->all[$secId]["sec_dirpath"] != ""}
+					{php $sec_dirpath = "html/" . $this->all[$secId]["sec_dirpath"] . "/" . $this->all[$secId]["sec_dirname"];}
+				{else}
+					{php $sec_dirpath = "html/" . $this->all[$secId]["sec_dirname"];}
+				{/if}
+			{else}
+				{php $sec_dirpath = "";}
+			{/if}
+
+			{if !$flaghtml}
+			{php $article_loc = $zengl_cms_rootdir . "add_edit_del_show_list_article.php?hidden=show" . "&amp;articleID=" . $sql->row["articleID"];}
+			{else}
+			{php $article_loc = $zengl_cms_rootdir . $sec_dirpath . "/article-" . $sql->row["articleID"] . ".html";}
+			{/if}
+			<tr><td><a href="{$article_loc}" title="{$sql->row[title]}">{subUTF8($sql->row["title"],32)}</a></td></tr>
+		{/while}
+		</table>
+	</div>
+	</td>
+	</tr>
+	</table>
 </div>
 
 </div>
-{zengl footer}
+{php $this->footer();}
 </body>
 </html>

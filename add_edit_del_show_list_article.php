@@ -27,6 +27,7 @@ i_need_func('article,err',__FILE__,true); //最后的参数为true时，file_cac
 include $my_need_files;
 
 import_request_variables("gpc","rvar_");
+if(!isset($rvar_hidden)) $rvar_hidden = '';
 $article = new article(true,true);
 if($rvar_hidden == 'add')
 {
@@ -36,6 +37,21 @@ if($rvar_hidden == 'add')
 		$article->show_add_article();
 	else
 		$article->add_article();
+}
+else if($rvar_hidden == 'ajax_save_to_draft')
+{
+	if(!$article->check_perm(ARTICLE_ADD))
+		exit('没有权限保存草稿!');
+	if(!$article->check_param($rvar_hidden))
+		exit('需要保存的内容为空!');
+	else
+		$article->AjaxSaveToDraft();
+}
+else if($rvar_hidden == 'ajax_get_draft')
+{
+	if(!$article->check_perm(ARTICLE_ADD))
+		exit('没有权限获取草稿内容!');
+	$article->AjaxGetDraft();
 }
 else if($rvar_hidden == 'edit')
 {
@@ -67,7 +83,9 @@ else if($rvar_hidden == 'list')
 else if($rvar_hidden == 'listajax')
 {
 	//sleep(5); 测试用的！
-	$article->list_articles_ajax();
+	$rvar_tpl_action = 'listajax';
+	$article->list_articles();
+	//$article->list_articles_ajax();
 }
 else if($rvar_hidden == 'admin')
 {
@@ -85,6 +103,8 @@ else if($rvar_hidden == 'admin')
 			new error('禁止访问','用户权限无法执行生成静态页面的操作,如果是游客请先登录！',true,true);
 		$article->admin_multi_html();
 	}
+	else if($rvar_action == 'multiLevelChange')
+		$article->admin_multi_level_change();
 	else
 		new error('文章操作失败','无效的请求参数！',true,true);
 }

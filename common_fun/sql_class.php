@@ -40,6 +40,9 @@ class sql
 	var $row;
 	var $rownum;
 	var $sqlite_lib_encode;
+	var $progress;
+	var $sqlite_bak_format_file = 'sqlite_bak_format.txt';
+	var $mysql_bak_format_file = 'mysql_bak_format.txt';
 	function __construct($charset)
 	{
 		global $db_type;
@@ -62,10 +65,15 @@ class sql
 		global $adminHtml_genhtml;
 		if($adminHtml_genhtml != 'yes')
 		{
+			if($this->link == null)
+				return;
 			if($this->db_type == MYSQL)
 				mysql_close($this->link);
 			else if($this->db_type == SQLITE)
 				sqlite_close($this->link);
+			else
+				new error('sql对象发生错误','无效的数据库类型！',true,true);
+			$this->link = null;
 		}
 	}
 	function mysql_conn_db($db_hostname,$db_username,$db_password,$db_database_name,$charset)
@@ -75,7 +83,7 @@ class sql
 		$this->password = $db_password;
 		$this->dbname = $db_database_name;
 		$this->charset = $charset;
-		$this->link = mysql_connect($this->hostname,$this->username,$this->password);
+		$this->link = mysql_connect($this->hostname,$this->username,$this->password,true); //最后一个参数true表示始终创建新的连接，这样一个连接就对应一个sql对象
 		if(!$this->link)
 		{
 			$this->fatalError('连接数据库失败，');
@@ -207,6 +215,38 @@ class sql
 		else
 			new error('插入数据库表失败','无效的数据库类型！',true,true);
 	}
+	/**
+	 * 将每列对应的值以数组的形式插入数据库表。
+	 */
+	function insert_use_array($table,$cols,$val_array)
+	{
+		$tablename = $this->tables_prefix . $table;
+		$this->sql_desc = "INSERT INTO " . $tablename . "( " . $cols . " )" . 'values (';
+		foreach ($val_array as $arg)
+		{
+			$arg = $this->escape_str($arg);
+			$arg = "'$arg'";
+			$this->sql_desc .= $arg . ',';
+		}
+		$this->sql_desc = substr($this->sql_desc, 0,-1);
+		$this->sql_desc .= ')';
+		if($this->db_type == MYSQL)
+		{
+			if(!mysql_query($this->sql_desc,$this->link))
+			{
+				$this->fatalError('往'. $tablename . '插入数据失败，');
+			}
+		}
+		else if($this->db_type == SQLITE)
+		{
+			if(!sqlite_query($this->link,$this->sql_desc))
+			{
+				$this->fatalError('往'. $tablename . '插入数据失败，');
+			}
+		}
+		else
+			new error('插入数据库表失败','无效的数据库类型！',true,true);
+	}
 	function query($sql)
 	{
 		$this->sql_desc = $sql;
@@ -265,8 +305,15 @@ class sql
 		else
 			new error('重置数据库记录失败','无效的数据库类型！',true,true);
 	}
+	/*尝试取消PHP时间限制*/
+	function cancel_time_limit()
+	{
+		set_time_limit(0);
+	}
+	/*备份数据库*/
 	function bak_tables()
 	{
+		$this->cancel_time_limit();
 		//$not_bak_array = array('articleID','userID','levelID','sec_ID','archive_ID','tag_ID');
 		$keynum = 0;
 		$recordnum;
@@ -283,6 +330,18 @@ class sql
 		$bakhandle = null;
 		$db_allnums=0;
 		$dirname = dirname($prefix);
+		if($sqltype == 'mysql')
+		{
+			if(file_exists($dirname . '/' .$this->sqlite_bak_format_file))
+				unlink($dirname . '/' .$this->sqlite_bak_format_file);
+			file_put_contents($dirname.'/'.$this->mysql_bak_format_file, "当前备份文件格式为{$sqltype}数据库格式");
+		}
+		elseif($sqltype == 'sqlite')
+		{
+			if(file_exists($dirname . '/' .$this->mysql_bak_format_file))
+				unlink($dirname . '/' .$this->mysql_bak_format_file);
+			file_put_contents($dirname.'/'.$this->sqlite_bak_format_file, "当前备份文件格式为{$sqltype}数据库格式");
+		}
 		$basename = basename($prefix);
 		$pattern = "/".$basename."_[0-9]+.".$suffix."$/";
 		$dirhandle = opendir($dirname);
@@ -291,7 +350,7 @@ class sql
 			if(preg_match($pattern, $file_bak))
 			{
 				unlink($dirname . '/' . $file_bak);
-				echo "&nbsp;&nbsp;删除 $dirname 目录的 $file_bak 文件<br/>";
+				$this->progress->step("删除 $dirname 目录的 $file_bak 文件",false);
 			}
 		}
 		foreach ($args as $arg)
@@ -301,13 +360,13 @@ class sql
 			$db_allnums += $this->row['all_num'];
 		}
 		if($this->db_type == MYSQL)
-			echo "当前数据库为mysql，该数据库一共有" . $db_allnums . "条记录,下面要转为" . $sqltype . "格式<br/>";
+			$this->progress->step("当前数据库为mysql，该数据库一共有" . $db_allnums . "条记录,下面要转为" . $sqltype . "格式",false);
 		else if($this->db_type == SQLITE)
-			echo "当前数据库为sqlite，该数据库一共有" . $db_allnums . "条记录,下面要转为" . $sqltype . "格式<br/>";
+			$this->progress->step("当前数据库为sqlite，该数据库一共有" . $db_allnums . "条记录,下面要转为" . $sqltype . "格式",false);
 		foreach ($args as $arg)
 		{
 			$this->query("select * from {$this->tables_prefix}{$arg}");
-			echo "正在备份{$this->tables_prefix}{$arg}表,该表有" . $this->get_num() . "条记录<br/>";
+			$this->progress->step("正在备份{$this->tables_prefix}{$arg}表,该表有" . $this->get_num() . "条记录",false);
 			flush_buffers();
 			$recordnum = 0;
 			while($this->parse_results())
@@ -342,7 +401,7 @@ class sql
 				fwrite($bakhandle, $sqlstr . "\r\n");
 				$recordnum++;
 				$allnum++;
-				echo "({$allnum})备份完成表{$this->tables_prefix}{$arg} 第 $recordnum 条记录<br/>";
+				$this->progress->step("({$allnum})备份完成表{$this->tables_prefix}{$arg} 第 $recordnum 条记录",false);
 				flush_buffers();
 				$num++;
 				if($num == $pernum)
@@ -357,8 +416,10 @@ class sql
 		if($bakhandle != null)
 			fclose($bakhandle);
 	}
+	/*恢复数据库*/
 	function restore_tables()
 	{
+		$this->cancel_time_limit();
 		$args = func_get_args();
 		$sqltype = array_pop($args);
 		$suffix = array_pop($args);
@@ -366,6 +427,28 @@ class sql
 		$count = 1; //文件名计数
 		$allnum = 0;
 		$bakfile = $prefix . '_' . $count . ".$suffix";
+		$dirname = dirname($prefix);
+		if($sqltype == 'mysql')
+		{
+			if(!file_exists($dirname . '/' .$this->mysql_bak_format_file))
+			{
+				$this->progress->end("错误：当前数据库是{$sqltype}类型，但是导出的备份文件不是{$sqltype}格式的，".
+						  		 "请导出为{$sqltype}格式后再试!");
+				die();
+			}
+		}
+		elseif($sqltype == 'sqlite')
+		{
+			if(!file_exists($dirname . '/' .$this->sqlite_bak_format_file))
+			{
+				$this->progress->end("错误：当前数据库是{$sqltype}类型，但是导出的备份文件不是{$sqltype}格式的，".
+						  		 "请导出为{$sqltype}格式后再试!");
+				die();
+			}
+		}
+		$this->progress->step("接下来采用事务方式来批量插入数据库！",false);
+		flush_buffers();
+		$this->begin(); //开启事务
 		while(file_exists($bakfile))
 		{
 			$bakhandle = fopen($bakfile, 'r');
@@ -381,13 +464,55 @@ class sql
 				{
 					$this->query($sqlstr);
 					$allnum++;
-					echo "$bakfile 已插入 $allnum 条记录<br/>";
+					$this->progress->step("$bakfile 加入插入队列 $allnum 条记录",false);
 					flush_buffers();
 				}
 			}
 			fclose($bakhandle);
 			$bakfile = $prefix . '_' . ++$count . ".$suffix";
 		}
+		$this->progress->step("准备将插入队列导入到数据库中，请稍等。。。",false);
+		flush_buffers();
+		$this->commit(); //提交事务
+	}
+	function begin()
+	{
+		if($this->db_type == MYSQL)
+		{
+			if(!mysql_query('BEGIN',$this->link)) //或者mysql_query("START TRANSACTION");
+			{
+				$this->fatalError('开启mysql事务失败！');
+			}
+		}
+		else if($this->db_type == SQLITE)
+		{
+			if(!sqlite_query($this->link,'begin'))
+			{
+				$this->fatalError('开启sqlite事务失败！');
+			}
+		}
+		else
+			new error('开启数据库事务失败','无效的数据库类型！',true,true);
+	}
+	function commit()
+	{
+		if($this->db_type == MYSQL)
+		{
+			if(!mysql_query('COMMIT',$this->link))
+			{
+				$this->fatalError('提交mysql事务失败！');
+			}
+			mysql_query("END",$this->link);
+		}
+		else if($this->db_type == SQLITE)
+		{
+			if(!sqlite_query($this->link,'commit'))
+			{
+				$this->fatalError('提交sqlite事务失败！');
+			}
+		}
+		else
+			new error('提交数据库事务失败','无效的数据库类型！',true,true);
 	}
 }
 ?>

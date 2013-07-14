@@ -162,6 +162,48 @@ class tags{
 		}
 		$this->add(implode(',', $tag_array), $rvar_articleID);
 	}
+	/**
+	 * 当删除文章时，会调用该函数，更新和删除无效的标签
+	 */
+	function update_for_del_articles($del_articles_id)
+	{
+		if(!(isset($del_articles_id) && $del_articles_id != ''))
+			return;
+		$del_articles_array = explode(',', $del_articles_id);
+		$count = count($del_articles_array); 
+		$sql = $this->sql;
+		$tablename = $sql->tables_prefix . 'tags';
+		$sqlstr = "select * from $tablename where ";
+		 foreach ($del_articles_array as $k => $v)
+		 {
+	 		$sqlstr .= "articles = '$v' or articles like '$v,%' or ".
+						"articles like '%,$v,%' or articles like '%,$v'";
+	 		if($k != $count - 1)
+	 			$sqlstr .= " or ";
+		 }
+		 $sql->query($sqlstr);
+		 $tmpsql = new sql('utf8');
+		 while($sql->parse_results())
+		 {
+		 	$articles = $sql->row['articles'];
+		 	$article_array = array_unique(explode(',', $articles));
+		 	foreach ($del_articles_array as $v)
+		 	{
+			 	if(($key = array_search($v,$article_array)) === false)
+			 		continue;
+			 	else
+			 		unset($article_array[$key]);
+		 	}
+		 	if(count($article_array) == 0)
+		 		$tmpsql->query("delete from $tablename where tag_ID = {$sql->row['tag_ID']}");
+		 	else
+		 	{
+		 		$articles = implode(',', $article_array);
+		 		$tmpsql->query("update $tablename set articles = '$articles',count = '" . count($article_array) .
+		 				"' where tag_ID = {$sql->row['tag_ID']}");
+		 	}
+		 }
+	}
 	function getall()
 	{
 		global $zengl_cms_tpl_dir;

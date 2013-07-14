@@ -94,6 +94,22 @@ class admin
 		else
 			die('tpl class file admin_show_right_class.php does not exist!');
 	}
+	function show_middle()
+	{
+		global $zengl_cms_tpl_dir;
+		global $zengl_theme;
+		global $zengl_old_theme;
+		if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_theme . '/class/admin_show_middle_class.php'))
+			include_once $zengl_theme_tpl_class;
+		else if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_old_theme .
+				'/class/admin_show_middle_class.php'))
+		{
+			$zengl_theme = $zengl_old_theme;
+			include_once $zengl_theme_tpl_class;
+		}
+		else
+			die('tpl class file admin_show_middle_class.php does not exist!');
+	}
 	function show()
 	{
 		global $zengl_cms_tpl_dir;

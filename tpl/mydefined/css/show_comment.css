@@ -1,0 +1,49 @@
+.comment_add a{
+	text-decoration:none;
+	blr:expression(this.onFocus=this.blur()); /*针对 IE*/
+	outline:none; /*针对firefox等*/
+	color:#000;
+}
+.comment_head{
+	width:690px;
+	height:63px;
+	background-image:url(../images/show_comment_css_img/comment_head.jpg);
+	background-repeat: no-repeat;
+}
+.comment_middle{
+	padding-bottom:10px;
+	padding-left:50px;
+	padding-right:10px;
+	background-image:url(../images/show_comment_css_img/comment_middle.jpg);
+	background-repeat: repeat-y;
+	/*background-color:#ffeb44;*/
+}
+.comment_middle p{
+	margin-top: 0px; 
+	margin-bottom: 0px;
+}
+.comment_bottom{
+	height:57px;
+	padding-left:50px;
+	background-image:url(../images/show_comment_css_img/comment_bottom.jpg);
+	background-repeat: no-repeat;
+}
+.reply{
+	background-color:#c9f84b;
+	margin-bottom:10px;
+	margin-top:10px;
+	margin-right:10px;
+}
+.reply_str{
+	font-weight:bold;
+	font-style: italic;
+}
+.reply_user{
+	padding-left:30px;
+}
+.reply_content{
+	padding-left:60px;
+	color:#fff;
+	background-color:#d9b00b;
+	margin:10px 30px 10px 30px;
+}

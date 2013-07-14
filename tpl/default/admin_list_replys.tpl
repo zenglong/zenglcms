@@ -117,31 +117,37 @@ $(document).ready(function() {
 				                     		} 
 	    					}); 
 	    					
-	  $(".widelink_content a,#set_reply_list").hover(function(){
-							$(this).css({"background":'red'});
-						},function(){
-							$(this).css({"background":'black'});
-						}).css({"background":'black',"color":'white'}).prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
-	  $(".widelink a").hover(function(){
-							$(this).css({"background":'red'});
-						},function(){
-							$(this).css({"background":'#f389ca'});
-						}).css({"background":'#f389ca',"color":'white'}).prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+	  $(".widelink_content a,#set_reply_list").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+	  $(".widelink a").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+	  $("#replys table tr").hover(function(){
+				$(this).addClass("td_hover");
+				$(this).find("a").css({"color":'#fff'});
+			},function(){
+				$(this).removeClass("td_hover");
+				$(this).find("a").css({"color":'#000'});
+		});
 	  $('.reply_table').tablesorter(); 
+	  $('#buttom_op div').hover(function(){
+			$(this).css({"background":'url({zengl theme}/images/admin_list_articles_css_img/greengradient.png) repeat-x',"color":'#fff'});
+			$(this).find("a").css({"color":'#fff'});
+		},function(){
+			$(this).css({"background":'url({zengl theme}/images/admin_list_articles_css_img/graygradient.png) top left repeat-x',"color":'#000'});
+			$(this).find("a").css({"color":'#000'});
+		});
 	});
 </script>
 <title>{zengl title}</title>
 </head>
 <body>
 <div id = "maindiv">
-	<h2>{zengl title}</h2>
+	<div id="header_title">{zengl title}</div>
 	<input type='text' value='{zengl reply_list_num}' id='reply_list_num' size='5' />&nbsp;&nbsp;
 	<a href='#' id='set_reply_list'>设置显示数目</a> &nbsp;&nbsp; 当前:{zengl current_num}/共:{zengl totalnum}
 	<div class="replys">
 		<div id="replys" class = 'widelink_content'>
 			<table class='reply_table'>
 				<thead> 
-					<tr align='center'><th>回复ID&nbsp;&nbsp;&nbsp;&nbsp;</th><th>选择&nbsp;&nbsp;&nbsp;&nbsp;</th><th>回复内容&nbsp;&nbsp;&nbsp;&nbsp;</th><th>所属评论&nbsp;&nbsp;&nbsp;&nbsp;</th><th>所属文章&nbsp;&nbsp;&nbsp;&nbsp;</th><th>所属用户&nbsp;&nbsp;&nbsp;&nbsp;</th><th>回复昵称&nbsp;&nbsp;&nbsp;&nbsp;</th><th>回复时间&nbsp;&nbsp;&nbsp;&nbsp;</th><th>操作&nbsp;&nbsp;&nbsp;&nbsp;</th></tr>
+					<tr align='center'><th width="70">回复ID&nbsp;&nbsp;&nbsp;&nbsp;</th><th width="60">选择&nbsp;&nbsp;&nbsp;&nbsp;</th><th>回复内容&nbsp;&nbsp;&nbsp;&nbsp;</th><th>所属评论&nbsp;&nbsp;&nbsp;&nbsp;</th><th>所属文章&nbsp;&nbsp;&nbsp;&nbsp;</th><th width="120">所属用户&nbsp;&nbsp;&nbsp;&nbsp;</th><th width="100">回复昵称&nbsp;&nbsp;&nbsp;&nbsp;</th><th width="150">回复时间&nbsp;&nbsp;&nbsp;&nbsp;</th><th  width="60">操作&nbsp;&nbsp;&nbsp;&nbsp;</th></tr>
 				</thead> 
 				<tbody> 
 				{zengl for_replys}
@@ -156,7 +162,7 @@ $(document).ready(function() {
 					<td class='reply_td'><a href={zengl username_a}>{zengl username}</a></td>
 					<td class='reply_td'><a href={zengl nickname_a}>{zengl nickname}</a></td>
 					<td class='reply_td'>{zengl time}</td>
-					<td class='reply_td'><a href={zengl reply_del} class='del_reply'>删除</a></td>
+					<td class='reply_td'><a href={zengl reply_del} class='del_reply' title="删除"><img src="{zengl theme}/images/admin_list_articles_css_img/del.jpg" width="23"></a></td>
 					<td class='reply_td'><input class='articleID' type='hidden' value="{zengl articleID}" /></td>
 				</tr>
 				{zengl endfor}
@@ -164,10 +170,11 @@ $(document).ready(function() {
 			</table>
 		</div>
 		<div id="buttom_op" class = 'widelink'>
-			<a id='selectAll' href='#'>全选</a>
-			<a id='unselect' href='#'>取消选择</a>
-			<a id='multidel' href='#'>批量删除</a>
+			<div id='selectAll'>全选</div>
+			<div id='unselect'>取消选择</div>
+			<div id='multidel'>批量删除</div>
 		</div>
+		<div id="buttom_op_clear"></div>
 		<div id="pages"></div>
 	</div>
 	

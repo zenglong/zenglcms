@@ -16,6 +16,7 @@
 <script type="text/javascript" src="{zengl theme}/js/jquery-1.7.1.js"></script>
 <script type="text/javascript" src="{zengl theme}/js/jquery.paginate.js"></script> 
 <script type="text/javascript" src="{zengl theme}/js/jquery.simplemodal.1.4.2.min.js"></script> 
+<script type="text/javascript" src="{zengl theme}/js/jquery.tablesorter.min.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
 		$(".delArticle").click(function(){
@@ -29,19 +30,31 @@ $(document).ready(function() {
 						});
 		$("#sec_ID").change(function() {
 					if($('#isrecur')[0].checked)
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID='+$(this)[0].value+'&is_recur='+$('#isrecur')[0].value;
+						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID='+$(this)[0].value+'&is_recur='+$('#isrecur')[0].value + '&page_display_num=' + {$this->page_size} + '&list_order={$rvar_list_order}';
 					else
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID='+$(this)[0].value+'&is_recur=no';
+						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID='+$(this)[0].value+'&is_recur=no' + '&page_display_num=' + {$this->page_size} + '&list_order={$rvar_list_order}';
 						});
 		$('#isrecur').change(function(){
 					if($(this)[0].checked)
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID='+$("#sec_ID")[0].value+'&is_recur='+$(this)[0].value;
+						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID='+$("#sec_ID")[0].value+'&is_recur='+$(this)[0].value + '&page_display_num=' + {$this->page_size} + '&list_order={$rvar_list_order}';
 					else
-						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID='+$("#sec_ID")[0].value+'&is_recur=no';
+						location.href='{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID='+$("#sec_ID")[0].value+'&is_recur=no' + '&page_display_num=' + {$this->page_size} + '&list_order={$rvar_list_order}';
 						});
 		$('#selectAll').click(function(){
 					$('.checkID').attr('checked',true);
 					return false;
+						});
+		$('#Invert_Selection').click(function(){
+					checknum = $('.checkID').size();
+					var ischecked;
+					for(i=0;i<checknum;i++)
+					{
+						ischecked = $('.checkID:eq('+i+')')[0].checked;
+						if(ischecked)
+							$('.checkID:eq('+i+')').attr('checked',false);
+						else
+							$('.checkID:eq('+i+')').attr('checked',true);
+					}
 						});
 		$('#unselect').click(function(){
 					$('.checkID').attr('checked',false);
@@ -156,7 +169,7 @@ $(document).ready(function() {
 		if(sec_pagenum > 0)
 			$("#pages").paginate({ 
 				        count    : {zengl sec_PageNum} {zengl sec_query}, 
-				        start    : 1, 
+				        start    : {$rvar_sec_page},
 				        display  : {zengl sec_DisplaySize}, 
 				        //border                    : true, 
 				        //border_color            : '#BEF8B8', 
@@ -171,8 +184,8 @@ $(document).ready(function() {
 				        background_hover_color    : 'red',
 				        images                    : false, 
 				        mouse                    : 'press', 
-				        onChange      : function(sec_page){ 
-					        					if($('#isrecur')[0].checked)
+				        onChange      : function(sec_page){
+					        				/*	if($('#isrecur')[0].checked)
 					        					  $isrecur =  $('#isrecur')[0].value;
 					        					else
 					        					  $isrecur = "no";
@@ -181,73 +194,245 @@ $(document).ready(function() {
 					                          '&sec_page=' + sec_page, 
 					                          function(response, status, xhr) {
 					                          		 set_a_style();
-					                          	  });
-				                     		} 
+					                          	  });*/
+											{if $rvar_keyword != ''}
+											timestamp=new Date().getTime();
+											location.href = "{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list" +
+											  '&sec_page=' + sec_page + '&page_display_num={$this->page_size}' + '&keyword={urlencode($rvar_keyword)}' + '&query_type={$rvar_query_type}' + '&timestamp=' + timestamp + '&list_order={$rvar_list_order}';
+											{else}
+											if($('#isrecur')[0].checked)
+					        					  $isrecur =  $('#isrecur')[0].value;
+					        				else
+					        					  $isrecur = "no";
+											location.href = "{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID=" + 
+														   $("#sec_ID")[0].value + '&is_recur=' + $isrecur + 
+														  '&sec_page=' + sec_page + '&page_display_num=' + {$this->page_size} + '&list_order={$rvar_list_order}';
+											{/if}
+				                     		}
 	    					}); 
 	    $("#article").ajaxSend(function(event, request, settings){
         				$(this).html("<img src='images/loading.gif' /> 正在读取。。。");
         				//$('#article').css("height",128 + "px");
         					});
         is_init_a_style = false;
-       function set_a_style()
+        function set_a_style()
         {
-			$(".widelink_content a").hover(function(){
-							$(this).css({"background":'red'});
-						},function(){
-							$(this).css({"background":'black'});
-						}).css({"background":'black',"color":'white'}).prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+			$(".widelink_content a").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
 			if(!is_init_a_style)
 			{
-				$(".widelink a").hover(function(){
-							$(this).css({"background":'red'});
-						},function(){
-							$(this).css({"background":'#f389ca'});
-						}).css({"background":'#f389ca',"color":'white'}).prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
+				$(".widelink a").prepend("&nbsp;&nbsp;").append("&nbsp;&nbsp;");
 				is_init_a_style = true;
 			}
+			$("#article table tr").hover(function(){
+					 $(this).addClass("td_hover");
+					 $(this).find("a").css({"color":'#fff'});
+					 $(this).find(".state_span_green,.state_span_red").css({"color":'#fff'});
+				},function(){
+					$(this).removeClass("td_hover");
+					$(this).find("a").css({"color":'#000'});
+					$(this).find(".state_span_green").css({"color":'#348e15'});
+					$(this).find(".state_span_red").css({"color":'#ff0000'});
+			});
+			$('#list_articles_table').tablesorter();
+			$('#buttom_op div').hover(function(){
+				$(this).css({"background":'url({zengl theme}/images/admin_list_articles_css_img/greengradient.png) repeat-x',"color":'#fff'});
+				$(this).find("a").css({"color":'#fff'});
+			},function(){
+				$(this).css({"background":'url({zengl theme}/images/admin_list_articles_css_img/graygradient.png) top left repeat-x',"color":'#000'});
+				$(this).find("a").css({"color":'#000'});
+			});
 		}
 		set_a_style();
+
+		$(".smimg_cls").mouseover(function(){
+			var src = $(this).find('img').attr('src');
+			var top = $(this).offset().top;
+			var left = $(this).offset().left;
+			$("#smimg_tip").html('完整缩略图：<br/><img src="' + src + '" alt="图片加载中。。。"/>')
+						   .css({"top" :(top-20) + "px",
+								"left" :(left+90) + "px"}).show();
+		}).mouseout(function(){
+			$("#smimg_tip").hide();
+		});
+
+		$("#multiLevelSel").change(function(){
+			locationStr = '{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=multiLevelChange&level=' + 
+									$(this).val();
+			checknum = $('.checkID').size();
+			count = 0;
+			for(i=0;i<checknum;i++)
+			{
+				if($('.checkID:eq('+i+')')[0].checked)
+				{
+					if(count == 0)
+						locationStr += '&id=' + $('.checkID:eq('+i+')')[0].value
+					else
+						locationStr += ',' + $('.checkID:eq('+i+')')[0].value;
+					count++;
+				}
+			}
+			if(count <= 0)
+			{
+				alert('请选择要设置的文章!');
+				$(this).val(-1);
+				return;
+			}
+			if($(this).val() < 0)
+			{
+				alert('请选择要设置的级别!');
+				return;
+			}
+			location.href = locationStr;
+		});
+
+		$('#set_page_display_num').click(function(){
+			{if $rvar_keyword != ''}
+			timestamp=new Date().getTime();
+			location.href = "{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list" +
+			  '&sec_page=' + 1 + '&page_display_num=' + $('#page_display_num').val() + '&keyword={urlencode($rvar_keyword)}' + '&query_type={$rvar_query_type}' + '&timestamp=' + timestamp + '&list_order={$rvar_list_order}';
+			{else}
+			if($('#isrecur')[0].checked)
+				  $isrecur =  $('#isrecur')[0].value;
+			else
+				  $isrecur = "no";
+			location.href = "{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID=" + 
+														   $("#sec_ID")[0].value + '&is_recur=' + $isrecur + 
+														  '&sec_page=' + {$rvar_sec_page} + '&page_display_num=' + $('#page_display_num').val() +  '&list_order={$rvar_list_order}';
+			{/if}
+			return false;
+		});
+
+		$('#set_query_value').click(function(){
+			value = encodeURI($('#query_word')[0].value);
+			type = $('#query_type').val();
+			timestamp=new Date().getTime();
+			location.href = "{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list" +
+											  '&sec_page=1' + '&page_display_num={$this->page_size}' + '&keyword=' + value + '&query_type=' + type + '&timestamp=' + timestamp + '&list_order={$rvar_list_order}';
+		});
+
+		$("#article_list_order").change(function(){
+			var list_order_value = $(this).val();
+			{if $rvar_keyword != ''}
+			timestamp=new Date().getTime();
+			location.href = "{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list" +
+			  '&sec_page=1' + '&page_display_num={$this->page_size}' + '&keyword={urlencode($rvar_keyword)}' + '&query_type={$rvar_query_type}' + '&list_order=' + list_order_value +'&timestamp=' + timestamp;
+			{else}
+			if($('#isrecur')[0].checked)
+				  $isrecur =  $('#isrecur')[0].value;
+			else
+				  $isrecur = "no";
+			location.href = "{zengl cms_root_dir}add_edit_del_show_list_article.php?hidden=admin&action=list&sec_ID=" + 
+						   $("#sec_ID")[0].value + '&is_recur=' + $isrecur + 
+						  '&sec_page=1' + '&page_display_num=' + {$this->page_size} + '&list_order='+list_order_value;
+			{/if}
+		});
 	});
 </script>
 <title>{zengl title}</title>
 </head>
+<style>
+a:active {outline:none;blr:expression(this.onFocus=this.blur());}
+img {
+   border: 0;
+}
+#smimg_tip{
+	display:none;
+	position:absolute;
+	color:#fff;
+	text-align:center;
+	background:#51B906;
+	border:solid 1px green;
+}
+</style>
 <body>
 <div id = "maindiv">
-<h2>{zengl title}</h2>
+<div id="header_title">{zengl title}</div>
+<div id="smimg_tip"></div>
 
 <div id = "section_input">
 	{zengl sections} &nbsp;&nbsp; 
 	<input type="checkbox" name="isrecur" id="isrecur" value="yes" {zengl ischecked}>是否显示子栏目</input>
 	<input type="hidden" name="sec_ID" id="sec_ID" value="{zengl sec_ID}">
+	<input type="text" id="page_display_num" value="{$this->page_size}" style="width:50px;">&nbsp;<a href="#" id="set_page_display_num">设置每页显示数</a>
+	&nbsp;当前:{php echo $sql->get_num();}
+	/共:{$article_totalnum}&nbsp;
+	<select id="query_type">
+		<option value="1"  {if $rvar_query_type==1 || $rvar_query_type == ""}selected="selected"{/if}>仅按标题查询</option>
+		<option value="2"  {if $rvar_query_type==2}selected="selected"{/if}>全文查询</option>
+	</select>&nbsp;
+	<input type="text" id="query_word" value="{$rvar_keyword}" />&nbsp;<a href="#" id="set_query_value">查询</a>
+	&nbsp;
+	<select id="article_list_order">
+		<option value="id_desc" {if $rvar_list_order == 'id_desc'}selected="selected"{/if}>按文章ID降序</option>
+		<option value="id_asc" {if $rvar_list_order == 'id_asc'}selected="selected"{/if}>按文章ID升序</option>
+		<option value="level_desc" {if $rvar_list_order == 'level_desc'}selected="selected"{/if}>按文章级别降序</option>
+		<option value="level_asc" {if $rvar_list_order == 'level_asc'}selected="selected"{/if}>按文章级别升序</option>
+		<option value="scansCount_desc" {if $rvar_list_order == 'scansCount_desc'}selected="selected"{/if}>按浏览量降序</option>
+		<option value="scansCount_asc" {if $rvar_list_order == 'scansCount_asc'}selected="selected"{/if}>按浏览量升序</option>
+		<option value="smimgpath_desc" {if $rvar_list_order == 'smimgpath_desc'}selected="selected"{/if}>按缩略图降序</option>
+		<option value="smimgpath_asc" {if $rvar_list_order == 'smimgpath_asc'}selected="selected"{/if}>按缩略图升序</option>
+		<option value="title_desc" {if $rvar_list_order == 'title_desc'}selected="selected"{/if}>按文章标题降序</option>
+		<option value="title_asc" {if $rvar_list_order == 'title_asc'}selected="selected"{/if}>按文章标题升序</option>
+		<option value="sec_ID_desc" {if $rvar_list_order == 'sec_ID_desc'}selected="selected"{/if}>按所属栏目ID降序</option>
+		<option value="sec_ID_asc" {if $rvar_list_order == 'sec_ID_asc'}selected="selected"{/if}>按所属栏目ID升序</option>
+		<option value="addtime_desc" {if $rvar_list_order == 'addtime_desc'}selected="selected"{/if}>按添加时间降序</option>
+		<option value="addtime_asc" {if $rvar_list_order == 'addtime_asc'}selected="selected"{/if}>按添加时间升序</option>
+		<option value="time_desc" {if $rvar_list_order == 'time_desc'}selected="selected"{/if}>按编辑时间降序</option>
+		<option value="time_asc" {if $rvar_list_order == 'time_asc'}selected="selected"{/if}>按编辑时间升序</option>
+	</select>
 </div>
 <br/>
 <div class="article">
 	<div id="article" class = 'widelink_content'>
-		<table>
-			<tr align='center'><th>文章ID</th><th>选择</th><th>文章标题</th><th>所属栏目</th><th>时间</th><th>状态</th><th>操作</th></tr>
+		<table id="list_articles_table">
+			<thead>
+			<tr align='center'><th width="90">文章ID</th><th width="70">选择</th><th>级别</th><th>浏览量</th><th>缩略图</th><th>文章标题</th><th>所属栏目</th><th>添加时间</th><th>编辑时间</th><th>状态</th><th>操作</th></tr>
+			</thead>
+			<tbody>
 			{zengl for_articles}
 			<tr>
 				<td align='center' >{zengl article_id}</td>
 				<td align='center'><input type="checkbox" class="checkID" value="{zengl article_id}"></td>
-				<td><a class = 'td_title' href={zengl article_loc} target='_blank' title='{zengl article_tip}'>{zengl article_title}</a></td> 
+				<td align='center'>{$sql->row[level]}</td>
+				<td align='center'>{$sql->row[scansCount]}</td>
+				{if $sql->row[smimgpath] != ''}
+				<td align='center' class="smimg_cls"><img border="0" src="{$sql->row[smimgpath]}" width="15" ></td>
+				{else}
+				<td align='center'>&nbsp;</td>
+				{/if}
+				<td><a class = 'td_title' href={zengl article_loc} target='_blank' title='{zengl article_tip}' onfocus="this.blur()">{zengl article_title}</a></td> 
 				<td>{zengl sec_name} </td>
+				<td>{date("Y/n/j G:i:s",$sql->row[addtime])}</td>
 				<td> {zengl article_time} </td>
 				<td> {zengl article_html_status} </td>
 				<td> 
-					<a href={zengl article_edit}>编辑</a>
-					<a href={zengl article_del} class='delArticle'>删除</a> 
+					<a href={zengl article_edit} title="编辑" onfocus="this.blur()"><img src="{zengl theme}/images/admin_list_articles_css_img/edit.jpg" width="23"></a>
+					<a href={zengl article_del} class='delArticle' title="删除" onfocus="this.blur()"><img src="{zengl theme}/images/admin_list_articles_css_img/del.jpg" width="23"></a> 
 				</td>
 			</tr>
 			{zengl endfor}
+			</tbody>
 		</table>
 	</div>
 	<div id="buttom_op" class = 'widelink'>
-		<a id='selectAll' href='#'>全选</a>
-		<a id='unselect' href='#'>取消选择</a>
-		<a id='multidel' href='#'>批量删除</a>
-		<a id='multimove' href='#'>批量移动</a>
-		<a id='multiHTML' href='#'>批量静态化</a>
+		<div id='selectAll'>全选</div>
+		<div id='Invert_Selection'>反选</div>
+		<div id='unselect'>取消选择</div>
+		<!--<div><a id='unselect' href='#' onfocus="this.blur()">取消选择</a></div>-->
+		<div id='multidel'>批量删除</div>
+		<div id='multimove'>批量移动</div>
+		<div id='multiHTML'>批量静态化</div>
+		<select id="multiLevelSel" WIDTH="100" STYLE="width: 100px;margin-top:8px;margin-left:10px;">
+			<option value="-1" >批量设置级别</option>
+			<option value="0" >取消级别</option>
+		{php $article_setting_array = config_get_db_setting('article');$article_setting_array = explode("|",$article_setting_array['article_level']);$count=1;}
+		{loop $article_setting_array $tmp_str}
+			<option value="{$count}" >{$tmp_str}</option>
+			{php $count++;}
+		{/loop}
+		</select>
 	</div>
+	<div id="buttom_op_clear"></div>
 	<div id="pages"></div>
 </div>
 

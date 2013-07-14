@@ -64,6 +64,13 @@ else if($rvar_action == 'setmenu')
 	else
 		$section->real_setmenu();
 }
+else if($rvar_action == 'ajaxGetPinyin')
+{
+	if(!$section->check_perm(SEC_EDIT))
+		exit('');
+	if(!isset($rvar_value)) $rvar_value = '';
+	exit(Pinyin($rvar_value,'utf8'));
+}
 else
 	new error('参数错误！','无效的执行参数！',true,true);
 ?>

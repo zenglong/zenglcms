@@ -2,7 +2,8 @@
 	text-align:center;
 } */
 #maindiv{
-	width:700px;
+	/*width:700px;*/
+	width:930px;
 	margin:0 auto;
 	/*text-align:left;*/
 }
@@ -35,4 +36,25 @@ a{
 }
 #tags{
 	clear:both;
+}
+#recommend_articles{
+	background-color:#000;
+	margin-top: 37px;
+}
+#recommend_articles a,#recommend_articles a:link,#recommend_articles a:visited,#recommend_articles a:active {
+	color:white;
+}
+#recommend_articles a:hover{
+	color:black;
+	background-color:white;
+}
+#recommend_title{
+	color:white;
+	font-weight:bold;
+	padding-top:10px;
+	margin-bottom:10px;
+	display:block;
+}
+.jPaginate{
+	width: 627px;
 }

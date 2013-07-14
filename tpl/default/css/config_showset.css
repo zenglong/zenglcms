@@ -1,0 +1,70 @@
+*{word-break:break-all;font-family:Verdana,Arial;}
+body{background:#fff;color:#000000;font-size:12px;margin:0px;height:100%;}
+html{height:100%;}
+input,textarea,select,button,td{font-size:12px;}
+a:link,a:visited,a:active{text-decoration:none;color:#000000;}
+a:hover{color:#006699;text-decoration:underline;}
+
+.tab_nav{width:8px;}
+.tab{height:20px;line-height:17px;background:url('../images/config_showset_css_img/tab_l.gif') no-repeat;letter-spacing:1px;}
+.tab a:link,.tab a:visited,.tab a:active{text-decoration:none;background:url('../images/config_showset_css_img/tab_r.gif') no-repeat right 0;padding:4px 15px 1px 15px;display:block;}
+.tab a:hover{color:#006699;}
+.tab_on{height:20px;line-height:17px;background:url('../images/config_showset_css_img/tab_l.gif') no-repeat 0 -24px;letter-spacing:1px;}
+/*.tab_on a:link,.tab_on a:visited,.tab_on a:active,.tab_on a:hover{text-decoration:none;background:url('tab_r.gif') no-repeat right -24px;color:#FFFFFF;padding:4px 15px 1px 15px;display:block;}*/
+.tab_on a:link,.tab_on a:visited,.tab_on a:active,.tab_on a:hover{text-decoration:none;background:url('../images/config_showset_css_img/tab_r.gif') no-repeat right -24px;color:#FAAC05;padding:4px 15px 1px 15px;display:block;} /*zl add*/
+
+.menu {
+	height: 27px;
+	overflow: hidden;
+	background: url('../images/config_showset_css_img/menu.gif') repeat-x;
+}
+
+.menu div {
+	background: url('../images/config_showset_css_img/tool.gif') no-repeat bottom right;
+	width: 45px;
+	height: 27px;
+}
+
+.tt {
+	letter-spacing: 1px;
+	font-weight: bold;
+	background: url('../images/config_showset_css_img/tt.jpg') repeat-x;
+	height: 25px;
+	line-height: 25px;
+	color: #000;
+	padding-left: 10px;
+}
+
+.tb,.tb_wrap{
+	width:100%;
+}
+
+.tl,.t2,.t3,.t2_colspan2{
+	background:#c7fab5;
+}
+
+.tl {
+	width:23%;
+}
+
+.t2 {
+	width:27%;
+}
+
+.t3 {
+	width:50%;
+}
+
+.btn {
+	background: url('../images/config_showset_css_img/btn.jpg') no-repeat;
+	height: 20px;
+	line-height: 20px;
+	width: 65px;
+	border: none;
+	cursor: pointer;
+}
+
+#submit_div{
+	margin:20px auto;
+	width:200px;
+}

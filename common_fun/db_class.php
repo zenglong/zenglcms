@@ -22,11 +22,23 @@
 */
 class db{
 	var $sql;
+	var $progress;
 	function __construct($use_sql)
 	{
 		if($use_sql)
 		{
 			$this->sql = $use_sql;
+		}
+	}
+	function initDBdata($table_name)
+	{
+		global $ZLCfg_DBDataDir;
+		$all_data_array = include $ZLCfg_DBDataDir . 'db_'.$table_name.'_init.php';
+		foreach ($all_data_array as $data_array)
+		{
+			$tablename = array_shift($data_array);
+			$colnames = array_shift($data_array);
+			$this->sql->insert_use_array($tablename, $colnames, $data_array);
 		}
 	}
 	function create_db_tables($rvar_command)
@@ -42,6 +54,8 @@ class db{
 		if($this->sql == null)
 			$this->sql = new sql('utf8');
 		$sql = &$this->sql;
+		$sql->begin(); //开启事务
+		$this->progress->step("使用事务创建数据库!",false);
 		if ($sql->db_type == MYSQL)
 		{
 			$sql->createTable('articles', 
@@ -50,16 +64,19 @@ class db{
 							title tinytext,
 							author varchar(30),
 							time int,
+							addtime int,
 							content mediumtext,
 							descript mediumtext,
 							smimgpath mediumtext,
 							scansCount int,
 							sec_ID int,
 							userID int,
+							tpl varchar(200),
+							level int,
 							permis mediumtext', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'articles 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'articles 成功!',false);
+			//flush_buffers();
 			$sql->createTable('user',
 							'userID int NOT NULL AUTO_INCREMENT,
 							PRIMARY KEY(userID),
@@ -75,8 +92,8 @@ class db{
 				$sql->insert('user','username,password,regtime,lastlogtime,level',$zengl_cms_init_name,md5($zengl_cms_init_pass . $db_pass_suffix),
 						$time=time(),$time,USER_ADMIN);//该记录用于调试，发布时请注释掉或删除，密码admin
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'user 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'user 成功!',false);
+			//flush_buffers();
 			$sql->createTable('level',
 					'levelID int NOT NULL AUTO_INCREMENT,
 					PRIMARY KEY(levelID),
@@ -90,8 +107,8 @@ class db{
 				$sql->insert('level','levelname,permission','初级注册用户',$permis_reg);
 			}
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'level 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'level 成功!',false);
+			//flush_buffers();
 			$sql->createTable('section',
 					'sec_ID int NOT NULL AUTO_INCREMENT,
 					PRIMARY KEY(sec_ID),
@@ -100,12 +117,18 @@ class db{
 					sec_parent_ID int,
 					sec_content mediumtext,
 					sec_weights int,
+					tpl varchar(200),
+					article_tpl varchar(200),
+					linkurl varchar(300),
+					type varchar(100),
+					keyword varchar(500),
+					sec_description mediumtext,
 					permis mediumtext', true);
 			if($rvar_command != 'onlyinit')
-				$sql->insert('section','sec_name,sec_dirname,sec_parent_ID,sec_weights,permis','根栏目','genlanmu',0,50,$permis_sec_root);
+				$sql->insert('section','sec_name,sec_dirname,sec_parent_ID,sec_weights,tpl,article_tpl,linkurl,type,keyword,sec_description,permis','根栏目','genlanmu',0,50,'','','','article','','',$permis_sec_root);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'section 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'section 成功!',false);
+			//flush_buffers();
 			$sql->createTable('archives',
 					'archive_ID int NOT NULL AUTO_INCREMENT,
 					PRIMARY KEY(archive_ID),
@@ -116,8 +139,8 @@ class db{
 					userID int,
 					permis mediumtext', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'archives 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'archives 成功!',false);
+			//flush_buffers();
 			$sql->createTable('tags',
 					'tag_ID int NOT NULL AUTO_INCREMENT,
 					PRIMARY KEY(tag_ID),
@@ -126,8 +149,8 @@ class db{
 					count int,
 					articles mediumtext', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'tags 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'tags 成功!',false);
+			//flush_buffers();
 			$sql->createTable('comment',
 					'comment_ID int NOT NULL AUTO_INCREMENT,
 					PRIMARY KEY(comment_ID),
@@ -140,8 +163,8 @@ class db{
 					ip_address tinytext,
 					permis mediumtext', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'comment 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'comment 成功!',false);
+			//flush_buffers();
 			$sql->createTable('CommentReply',
 					'reply_ID int NOT NULL AUTO_INCREMENT,
 					PRIMARY KEY(reply_ID),
@@ -153,8 +176,17 @@ class db{
 					ip_address tinytext,
 					permis mediumtext', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'CommentReply 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'CommentReply 成功!',false);
+			//flush_buffers();
+			$sql->createTable('setting',
+					'set_group varchar(120),
+					name varchar(120),
+					value text',true);
+			if($rvar_command != 'onlyinit')
+				$this->initDBdata('setting');
+			if ($sql->err == SQL_SUCCESS)
+				$this->progress->step("创建表： $db_tables_prefix".'setting 成功!',false);
+			//flush_buffers();
 		}
 		else if($sql->db_type == SQLITE)
 		{
@@ -163,16 +195,19 @@ class db{
 							title,
 							author,
 							time INTEGER,
+							addtime INTEGER,
 							content,
 							descript,
 							smimgpath,
 							scansCount INTEGER,
 							sec_ID INTEGER,
 							userID INTEGER,
+							tpl,
+							level INTEGER,
 							permis', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'articles 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'articles 成功!',false);
+			//flush_buffers();
 			$sql->createTable('user',
 					'userID INTEGER PRIMARY KEY,
 					username,
@@ -187,8 +222,8 @@ class db{
 				$sql->insert('user','username,password,regtime,lastlogtime,level',$zengl_cms_init_name,md5($zengl_cms_init_pass . $db_pass_suffix),
 						$time=time(),$time,USER_ADMIN);//该记录用于调试，发布时请注释掉或删除，密码admin
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'user 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'user 成功!',false);
+			//flush_buffers();
 			$sql->createTable('level',
 					'levelID INTEGER PRIMARY KEY,
 					levelname,
@@ -201,8 +236,8 @@ class db{
 				$sql->insert('level','levelname,permission','初级注册用户',$permis_reg);
 			}
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'level 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'level 成功!',false);
+			//flush_buffers();
 			$sql->createTable('section',
 					'sec_ID INTEGER PRIMARY KEY,
 					sec_name,
@@ -210,12 +245,18 @@ class db{
 					sec_parent_ID INTEGER,
 					sec_content,
 					sec_weights INTEGER,
+					tpl,
+					article_tpl,
+					linkurl,
+					type,
+					keyword,
+					sec_description,
 					permis', true);
 			if($rvar_command != 'onlyinit')
-				$sql->insert('section','sec_name,sec_dirname,sec_parent_ID,sec_weights,permis','根栏目','genlanmu',0,50,$permis_sec_root);
+				$sql->insert('section','sec_name,sec_dirname,sec_parent_ID,sec_weights,tpl,article_tpl,linkurl,type,keyword,sec_description,permis','根栏目','genlanmu',0,50,'','','','article','','',$permis_sec_root);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'section 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'section 成功!',false);
+			//flush_buffers();
 			$sql->createTable('archives',
 					'archive_ID INTEGER PRIMARY KEY,
 					title,
@@ -225,8 +266,8 @@ class db{
 					userID INTEGER,
 					permis', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'archives 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'archives 成功!',false);
+			//flush_buffers();
 			$sql->createTable('tags',
 					'tag_ID INTEGER PRIMARY KEY,
 					tag_name,
@@ -234,8 +275,8 @@ class db{
 					count INTEGER,
 					articles', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'tags 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'tags 成功!',false);
+			//flush_buffers();
 			$sql->createTable('comment',
 					'comment_ID INTEGER PRIMARY KEY,
 					username ,
@@ -247,8 +288,8 @@ class db{
 					ip_address,
 					permis', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'comment 成功!<br/>';
-			flush_buffers();
+				$this->progress->step("创建表： $db_tables_prefix".'comment 成功!',false);
+			//flush_buffers();
 			$sql->createTable('CommentReply',
 					'reply_ID INTEGER PRIMARY KEY,
 					username ,
@@ -259,9 +300,21 @@ class db{
 					ip_address ,
 					permis ', true);
 			if ($sql->err == SQL_SUCCESS)
-				echo "创建表： $db_tables_prefix".'CommentReply 成功!<br/>';
-			flush_buffers();
-		}
-	}
-}
+				$this->progress->step("创建表： $db_tables_prefix".'CommentReply 成功!',false);
+			//flush_buffers();
+			$sql->createTable('setting',
+					'set_group,
+					name,
+					value',true);
+			if($rvar_command != 'onlyinit')
+				$this->initDBdata('setting');
+			if ($sql->err == SQL_SUCCESS)
+				$this->progress->step("创建表： $db_tables_prefix".'setting 成功!',false);
+			//flush_buffers();
+		}//else if($sql->db_type == SQLITE)
+		$this->progress->step("准备批处理提交事务，稍等!",false);
+		$sql->commit(); //提交事务
+		$this->progress->step("创建数据库表的事务处理完毕!",false);
+	}//function create_db_tables($rvar_command)
+}//class db
 ?>

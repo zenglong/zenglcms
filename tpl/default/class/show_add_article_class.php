@@ -1,6 +1,7 @@
 <?php 
 global $zengl_cms_rootdir;
-$this->sql = new sql('utf8');
+if($this->sql == null)
+	$this->sql = new sql('utf8');
 $this->getallsections();
 $filetpl = $zengl_cms_tpl_dir . $zengl_theme . '/write_article.tpl';
 $filecache = $zengl_cms_tpl_dir . 'cache/write_article_cache.php';
@@ -27,6 +28,8 @@ else
 	$tpl->setVar('options', '$this->recursive_show_options(1,4);',true);
 	$tpl->setVar('article_content', '');
 	$tpl->setVar('article_scans', '0');
+	$tpl->setVar('cms_root_dir', 'echo $zengl_cms_rootdir;',true);
+	$tpl->template_parse();
 	$tpl->cache();
 	include $tpl->filecache;
 }

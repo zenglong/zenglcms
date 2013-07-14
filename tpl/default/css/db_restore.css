@@ -1,5 +1,5 @@
-#simplemodal-overlay {background-color:#000;}
-#simplemodal-container {background-color:#333; border:8px solid #444; padding:12px;}
+#simplemodal-overlay {background-color:#777;}
+#simplemodal-container {background-color:#85d949; border:8px solid #51B906; padding:12px;}
 #restore_dialog .buttons div{
 	background-image:url(../images/db_restore_css_img/dialog_button.gif); 
 	background-repeat: repeat-x;

@@ -68,9 +68,12 @@
 			(至于数据库备份恢复时要用到的用户名和密码，以及系统升级时要用到的用户名和密码，请自行在后台配置中设置。)<br/><br/>
 			<input type="submit" value="提交" /><br/><br/>	
 		</form>
-		<iframe name= "down" id="framedown" scrolling=auto frameborder=1 border=1 width='680'> 
-		</iframe>
 	</div>
+</div>
+<div style="width:750px;margin:20px auto">
+安装进度：<br/>
+<iframe name= "down" id="framedown" scrolling=auto frameborder=1 border=1 width='830' height="630"> 
+</iframe>
 </div>
 </body>
 </html>

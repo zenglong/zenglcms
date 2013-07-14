@@ -1,5 +1,5 @@
 #main{
-	width: 787px;
+	width: 550px;
 	margin: 90px auto 0;
 }
 #main_head{
@@ -10,21 +10,24 @@
 }
 #title{
 	color: red;
-	margin-left: 200px; 
+	margin-left: 150px;
 	padding-top: 30px;
 	font:bold 18pt arial;
-	width:450px;
+	width: 400px;
 }
 #main_mid{
-	background-image: url("../images/success_error_tpl_img/shengmidpaper.jpg");
-	background-repeat: repeat-y;
+	/*background-image: url("../images/success_error_tpl_img/shengmidpaper.jpg");
+	background-repeat: repeat-y;*/
 	/*height: 296px;*/
-	width: 787px;
+	background-color:#faf4b5;
+	width: 550px;
+	border:1px solid green;
 }
 #content{
-	margin-left: 150px;
+	margin-left: 100px;
+	margin-bottom: 20px;
    	padding-top: 20px;
-   	width: 500px;
+   	width: 450px;
 }
 #main_last{
 	background-image: url("../images/success_error_tpl_img/shenglastpaper.jpg");

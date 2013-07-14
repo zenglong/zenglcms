@@ -133,11 +133,19 @@ class section
 		global $rvar_secname;
 		global $rvar_sec_dirname;
 		global $rvar_sec_weights;
+		global $rvar_list_tpl;
+		global $rvar_article_tpl;
+		global $rvar_linkurl;
+		global $rvar_keyword;
+		global $rvar_description;
+		global $rvar_sec_type;
 		global $rvar_parentID;
 		if($rvar_sec_dirname == '')
 			$rvar_sec_dirname = Pinyin($rvar_secname,'utf8');
 		if($rvar_sec_weights == '')
 			$rvar_sec_weights = 50;
+		if($rvar_sec_type == '')
+			$rvar_sec_type = 'article';
 		if($this->is_addsamesec())
 			new error('栏目操作失败：','存在相同的栏目名或者静态目录名相同(目录名可能是栏目名的拼音)，'.
 										'请重新设置栏目名或目录名！',true,true);
@@ -147,9 +155,10 @@ class section
 		$permis->gen_otheruid_permis(SEC_EDIT, PER_DENY);
 		$permis->gen_otheruid_permis(SEC_DEL, PER_DENY);
 		$sql = &$this->sql;
-		$sql->insert('section','sec_name,sec_dirname,sec_parent_ID,sec_weights,permis',
-				$rvar_secname,$rvar_sec_dirname,$rvar_parentID,
-				$rvar_sec_weights,$permis->gen_permis_str());
+		$sql->insert('section','sec_name,sec_dirname,sec_parent_ID,sec_content,sec_weights,tpl,article_tpl,linkurl,keyword,sec_description,type,permis',
+				$rvar_secname,$rvar_sec_dirname,$rvar_parentID,'',
+				$rvar_sec_weights,$rvar_list_tpl,$rvar_article_tpl,
+				$rvar_linkurl,$rvar_keyword,$rvar_description,$rvar_sec_type,$permis->gen_permis_str());
 		$sql->query("select sec_content from $sql->tables_prefix" . "section where sec_ID = $rvar_parentID");
 		$sql->parse_results();
 		$newcontent=$sql->row['sec_content'];
@@ -264,13 +273,20 @@ class section
 		global $rvar_delID;
 		global $rvar_edit_dirname;
 		global $rvar_edit_weights;
-		if(($this->all[$rvar_delID]['sec_dirname'] != '' && 
+		global $rvar_edit_list_tpl;
+		global $rvar_edit_article_tpl;
+		global $rvar_edit_linkurl;
+		global $rvar_edit_keyword;
+		global $rvar_edit_description;
+		global $rvar_sec_type;
+		
+		/*if(($this->all[$rvar_delID]['sec_dirname'] != '' && 
 			$this->all[$rvar_delID]['sec_weights'] !='') 	&& 
 			(($rename == '' && $rvar_edit_dirname == '' && $rvar_edit_weights == '') || 
 			 ($rename == $this->all[$rvar_delID]['sec_name'] && 
 			  $rvar_edit_dirname == $this->all[$rvar_delID]['sec_dirname']) &&
 			  $rvar_edit_weights == $this->all[$rvar_delID]['sec_weights']))
-			new success('ZENGLCMS栏目编辑情况：','栏目无须修改！',true,true);
+			new success('ZENGLCMS栏目编辑情况：','栏目无须修改！',true,true);*/
 		if($rename == '')
 			$rename = $this->all[$rvar_delID]['sec_name'];
 		if($rvar_edit_dirname == '')
@@ -282,12 +298,24 @@ class section
 			else
 				$rvar_edit_weights = 50;
 		}
+		if($rvar_sec_type == '')
+		{
+			$rvar_sec_type = 'article';
+		}
 		$sql = &$this->sql;
 		$rename = $sql->escape_str($rename);
 		$dirname = $sql->escape_str($rvar_edit_dirname);
 		$sec_weights = $sql->escape_str($rvar_edit_weights);
+		$tpl = $sql->escape_str($rvar_edit_list_tpl);
+		$article_tpl = $sql->escape_str($rvar_edit_article_tpl);
+		$linkurl = $sql->escape_str($rvar_edit_linkurl);
+		$type = $sql->escape_str($rvar_sec_type);
+		$keyword = $sql->escape_str($rvar_edit_keyword);
+		$description = $sql->escape_str($rvar_edit_description);
 		$sql->query("update {$sql->tables_prefix}section set sec_name = '$rename', " . 
-					  " sec_dirname = '$dirname', sec_weights = '$sec_weights' " . 
+					  " sec_dirname = '$dirname', sec_weights = '$sec_weights', " .
+					  " tpl = '$tpl', article_tpl = '$article_tpl', " .
+					  " linkurl = '$linkurl', type = '$type' , keyword = '$keyword' , sec_description = '$description'" . 
 					  " where sec_ID = $rvar_delID");
 		if(file_exists($this->array_file))
 			unlink($this->array_file);
@@ -356,38 +384,6 @@ class section
 				$this->recursive_show_options($next, $count,$select);
 		}
 	}
-	function recur_show_secs($id,$count,$idname,$classname)
-	{
-		global $zengl_cms_rootdir;
-		global $adminHtml_genhtml;
-		if($count == 1)
-			echo "<ul id='$idname' class='$classname'>";
-		else 
-			echo "<ul>";
-		
-		if($count == 1)
-		{
-			if($this->all == null)
-				$this->getall();
-			if($adminHtml_genhtml == 'yes')
-				echo "<li><a href='{$zengl_cms_rootdir}index.html'>主页</a></li>";
-			else
-				echo "<li><a href='{$zengl_cms_rootdir}index.php'>主页</a></li>";
-			echo "<li><a href='$id'>{$this->all[$id]['sec_name']}</a></li>";
-		}
-		if($this->all[$id]['sec_content']!='')
-		{
-			$content = explode(',', $this->all[$id]['sec_content']);
-			foreach ($content as $next)
-			{
-				echo "<li><a href='$next'>{$this->all[$next]['sec_name']}</a>";
-				if($this->all[$next]['sec_content']!='')
-					$this->recur_show_secs($next, $count+1);
-				echo "</li>";
-			}
-		}
-		echo "</ul>";
-	}
 	function getall()
 	{
 		if(is_array($this->all))
@@ -396,6 +392,7 @@ class section
 			$this->all = unserialize(file_get_contents($this->array_file));
 		else 
 		{
+			$magic_quote = get_magic_quotes_gpc();
 			$this->all = array();
 			$sql = &$this->sql;
 			$sql->query("select * from $sql->tables_prefix" . "section");
@@ -407,7 +404,21 @@ class section
 						'sec_parent_ID'=>$sql->row['sec_parent_ID'],
 						'sec_content'=>$sql->row['sec_content'],
 						'sec_weights'=>$sql->row['sec_weights'],
+						'tpl'=>$sql->row['tpl'],
+						'article_tpl'=>$sql->row['article_tpl'],
+						'linkurl'=>$sql->row['linkurl'],
+						'type'=>$sql->row['type'],
 						'permis'=>$sql->row['permis']);
+				if(!empty($magic_quote))
+				{
+					$this->all[$sql->row['sec_ID']]['keyword'] = stripslashes($sql->row['keyword']);
+					$this->all[$sql->row['sec_ID']]['sec_description'] = stripslashes($sql->row['sec_description']);
+				}
+				else
+				{
+					$this->all[$sql->row['sec_ID']]['keyword'] = $sql->row['keyword'];
+					$this->all[$sql->row['sec_ID']]['sec_description'] = $sql->row['sec_description'];
+				}
 			}
 			foreach ($this->all as $secId => $array)
 			{

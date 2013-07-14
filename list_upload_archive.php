@@ -37,6 +37,13 @@ if($rvar_action == 'upload')
 	else 
 		$archive->upload();
 }
+elseif($rvar_action == 'upload_watermark')
+{
+	if(!$archive->check_perm(ARCHIVE_UPLOAD))
+		new error('禁止访问','用户权限无法上传附件,如果是游客请先登录！',true,true);
+	else
+		$archive->upload_forWaterMark();
+}
 elseif ($rvar_action == 'list')
 {
 	if(!$archive->check_perm(ARCHIVE_LIST))
@@ -63,6 +70,15 @@ elseif ($rvar_action == 'del')
 		new error('禁止访问','用户权限无法删除该附件,如果是游客请先登录！',true,true);
 	else
 		$archive->del_archive();
+}
+elseif($rvar_action == 'multi_del')
+{
+	if(!$archive->check_param($rvar_action))
+		new error('无法执行删除','无效的提交参数！',true,true);
+	if(!$archive->check_perm(ARCHIVE_DEL))
+		new error('禁止访问','用户权限无法删除该附件,如果是游客请先登录！',true,true);
+	else
+		$archive->multi_del_archives();
 }
 elseif ($rvar_action == 'edit')
 {

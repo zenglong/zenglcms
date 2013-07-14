@@ -56,7 +56,7 @@ else
 			else
 			echo $sql->row["title"] . " (该附件已经被删除或转移!)";
 			?>');
-	$tpl->setVar('upload_time', '<?php echo "上传时间：" . date("Y/n/j G:i:s",$sql->row["time"]); ?>');
+	$tpl->setVar('upload_time', '<?php echo date("Y/n/j G:i:s",$sql->row["time"]); ?>');
 	$tpl->setVar('upload_size',
 			'<?php
 			echo number_format(filesize($sql->row["path"])/1024,3);
@@ -73,6 +73,7 @@ else
 		echo \'selected="selected"\';
 		else
 		echo "";',true);
+	$tpl->template_parse();
 	$tpl->cache();
 	include $filecache;
 }

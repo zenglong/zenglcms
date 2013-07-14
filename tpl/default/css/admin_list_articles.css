@@ -1,14 +1,19 @@
+*{
+    font-family: Verdana,Arial;
+    word-break: break-all;
+	font-size:12px;
+}
+body{
+	background:#c7fab5;
+}
 #maindiv{
-	width:800px;
-	margin:0 auto;
-	/*text-align:left;*/
+	width:100%;
 }
 #section_input{
 	margin-bottom: 20px;
 }
 #article{
-	width: 1000px;
-	/*height: 560px;*/
+	width:100%;
 }
 .article #buttom_op{
 	margin-top: 10px; 
@@ -17,8 +22,10 @@
 a{
 	text-decoration:none;
 }
-#simplemodal-overlay {background-color:#000;}
-#simplemodal-container {background-color:#333; border:8px solid #444; padding:12px;}
+/*#simplemodal-overlay {background-color:#000;}
+#simplemodal-container {background-color:#333; border:8px solid #444; padding:12px;}*/
+#simplemodal-overlay {background-color:#777;}
+#simplemodal-container {background-color:#85d949; border:8px solid #51B906; padding:12px;}
 #del_dialog .buttons div,#html_dialog .buttons div,#move_dialog .buttons div,#move_dialog_ask .buttons div{
 	background-image:url(../images/admin_list_articles_css_img/dialog_button.gif); 
 	background-repeat: repeat-x;
@@ -32,4 +39,76 @@ a{
 }
 #move_dialog .buttons div{
 	margin-top:30px
+}
+table{
+	width:100%;
+}
+tr {
+	/*background:#b5faef;*/
+	background: url(../images/admin_list_articles_css_img/graygradient.png) top left repeat-x;
+	height: 23px;
+	font-size: 12px;
+}
+tr .first_td{
+	width:150px;
+}
+tr td a{
+	color:#000;
+}
+tr td a:hover{
+	color:#fff;
+}
+
+.td_hover{
+	background: url(../images/admin_list_articles_css_img/greengradient.png) repeat-x;
+	color:#fff;
+}
+
+#header_title{
+	width:100%;
+	font-size:18px;
+	background:#c7fab5;
+	margin-bottom:10px;
+}
+
+.state_span_green{
+	color:#348e15;
+}
+
+.state_span_red{
+	color:#ff0000;
+}
+
+#list_articles_table thead tr .header {
+	background-image: url(../images/tableSort/bg.gif);
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+
+#list_articles_table thead tr .headerSortUp {
+	background-image: url(../images/tableSort/asc.gif);
+}
+
+#list_articles_table thead tr .headerSortDown {
+	background-image: url(../images/tableSort/desc.gif);
+}
+
+#list_articles_table thead tr .headerSortUp, #list_articles_table thead tr .headerSortDown{
+	background-color: #8DBDD8;
+}
+
+#buttom_op div{
+	background: url(../images/admin_list_articles_css_img/graygradient.png) top left repeat-x;
+	height: 25px;
+	width: 120px;
+	float: left;
+	margin: 5px;
+	text-align: center;
+	padding-top: 5px;
+	cursor: pointer;
+}
+
+#buttom_op_clear{
+	clear:both;
 }

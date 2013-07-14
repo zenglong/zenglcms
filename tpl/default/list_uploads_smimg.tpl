@@ -9,7 +9,7 @@ $(document).ready(function() {
 		$('.a_smimg').click(function(){
 			var fileUrl = $(this).attr('href');
 			this.blur();
-			window.opener.setimgsmimg(fileUrl,true);
+			window.opener.setimgsmimg(fileUrl);
 			window.close();
 			return false;
 		});

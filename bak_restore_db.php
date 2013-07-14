@@ -67,27 +67,54 @@ else
 
 if($rvar_action == 'bak')
 {
-	echo "准备备份数据库表为 " . $sqltype . " 格式：<br/>";
-	flush_buffers();
-	$sql->bak_tables('user','articles','level','section','archives','tags','comment','CommentReply',$db_database_bak_prefix,
+	$permis->progress_begin('准备备份数据库', 2);
+	$permis->progress("准备备份数据库表为 " . $sqltype . " 格式：");
+	$sql->progress = &$permis->progress;
+	//flush_buffers();
+	$sql->bak_tables('user','articles','level','section','archives','tags','comment','CommentReply','setting',$db_database_bak_prefix,
 						$db_database_bak_suffix,$db_bak_pernum,$sqltype);
-	echo "备份完毕！<br/>";
+	$permis->progress_end("备份完毕！");
 }
 else if($rvar_action == 'restore')
 {
-	echo "准备创建数据库表结构到 " . $sqltype ." 数据库中：<br/>";
-	flush_buffers();
+	$permis->progress_begin("准备创建数据库表结构到 " . $sqltype ." 数据库中：",5);
+	//flush_buffers();
 	$db = new db(&$sql);
+	$db->progress = null;
+	$db->progress = &$permis->progress;
+	$dirname = dirname($db_database_bak_prefix);
+	if($sqltype == 'mysql')
+	{
+		if(!file_exists($dirname . '/' .$sql->mysql_bak_format_file))
+		{
+			$permis->progress_end("错误：当前数据库是{$sqltype}类型，但是导出的备份文件不是{$sqltype}格式的，".
+					"请导出为{$sqltype}格式后再试!");
+			die();
+		}
+	}
+	elseif($sqltype == 'sqlite')
+	{
+		if(!file_exists($dirname . '/' .$sql->sqlite_bak_format_file))
+		{
+			$permis->progress_end("错误：当前数据库是{$sqltype}类型，但是导出的备份文件不是{$sqltype}格式的，".
+					"请导出为{$sqltype}格式后再试!");
+			die();
+		}
+	}
 	$db->create_db_tables('onlyinit');
-	echo "准备恢复数据库表到 " . $sqltype ." 数据库中：<br/>";
-	flush_buffers();
+	$permis->progress("准备恢复数据库表到 " . $sqltype ." 数据库中：");
+	//flush_buffers();
+	$sql->progress = null;
+	$sql->progress =&$permis->progress;
 	$sql->restore_tables($db_database_bak_prefix,
 							$db_database_bak_suffix,$sqltype);
-	echo "恢复完毕！<br/>";
+	$permis->progress("恢复完毕！");
 	$cache = new cache();
+	$cache->progress = null;
+	$cache->progress = &$permis->progress;
 	$cache->clear_caches();
 	$permis->update_permis();
-	echo '<br/>请刷新浏览器来显示效果！<br/>';
+	$permis->progress_end('请刷新浏览器来显示效果！');
 }
 else 
 	new error('数据库备份/恢复操作失败','无效的请求参数！',true,true);

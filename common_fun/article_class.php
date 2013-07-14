@@ -35,6 +35,7 @@ class article
 	var $display_size = 7;
 	var $index_count = 10;
 	var $index_sec_count = 6;
+	var $progress;
 	function __construct($use_session=false,$use_sql=false)
 	{
 		global $zengl_cms_filecache_dir;
@@ -48,6 +49,7 @@ class article
 		
 		$this->array_file = $zengl_cms_filecache_dir . 'all_sections_array.php';
 		$this->permis = new permis();
+		$this->progress = new progress();
 		if($use_session)
 		{
 			$this->session = new session();
@@ -65,6 +67,9 @@ class article
 		global $rvar_title;
 		global $rvar_author;
 		global $rvar_content;
+		if(!isset($rvar_title)) $rvar_title = '';
+		if(!isset($rvar_author)) $rvar_author = '';
+		if(!isset($rvar_content)) $rvar_content = '';
 		//先检查参数
 		if($action == 'add')
 		{
@@ -73,7 +78,14 @@ class article
 			else 
 				return true;
 		}
-		if($action == 'edit')
+		else if($action == 'ajax_save_to_draft')
+		{
+			if( $rvar_content == '')
+				return false;
+			else
+				return true;
+		}
+		else if($action == 'edit')
 		{
 			global $rvar_articleID;
 			if(isset($rvar_articleID) &&
@@ -135,6 +147,24 @@ class article
 		else
 			return false;
 	}
+	
+	/*
+	 * 删除文章生成的相关的html文件，包括分页的html文件*/
+	function del_article_htmlfiles($base_path,$articleID)
+	{
+		$articlecache = $base_path . '-'. $articleID .'.html';
+		if(file_exists($articlecache))
+			unlink($articlecache);
+		for($p=2;;$p++)
+		{
+			$articlecache = $base_path . '-'. $articleID .'-'.$p.'.html';
+			if(file_exists($articlecache))
+				unlink($articlecache);
+			else
+				break;
+		}
+	}
+	
 	function edit_article()
 	{
 		global $rvar_title;
@@ -142,23 +172,39 @@ class article
 		global $rvar_tags;
 		global $rvar_content;
 		global $rvar_smimgpath;
+		global $rvar_isneed_getsmimg;
 		global $rvar_checksmimg;
 		global $rvar_descript;
+		global $rvar_level;
 		global $rvar_scans;
 		global $rvar_sec_ID;
 		global $rvar_articleID;
+		global $rvar_time;
+		global $rvar_addtime;
+		global $rvar_tpl;
 		global $zengl_cms_tpl_dir;
 		global $article_descript_charnum;
+		$rvar_time = isset($rvar_time) ? $rvar_time : '';
+		if($rvar_time == '')
+			$time = time();
+		else
+			$time = strtotime($rvar_time);
+		if($rvar_addtime == '')
+			$addtime = $time;
+		else
+			$addtime = strtotime($rvar_addtime);
 		$sql = &$this->sql;
 		$sql->query("select sec_ID from {$this->tablename} where articleID = $rvar_articleID");
 		$sql->parse_results();
 		$secID = $sql->row['sec_ID'];
 		$author = $sql->escape_str($rvar_author);
 		$title = $sql->escape_str($rvar_title);
+		$tpl = $sql->escape_str($rvar_tpl);
+		$level = $sql->escape_str($rvar_level);
 		if($rvar_smimgpath == '' && $rvar_checksmimg == 1)
 		{
 			preg_match('/<img.*src="(.*)"\\s*.*>/iU',$rvar_content,$match);
-			if($match[1]!= '')
+			if(isset($match[1]) && $match[1]!= '')
 			{
 				$rvar_smimgpath = $sql->escape_str($match[1]);
 				$sql->query("select * from {$sql->tables_prefix}archives where path = '{$rvar_smimgpath}'");
@@ -166,10 +212,20 @@ class article
 				$rvar_smimgpath = $sql->row['smimgpath'];
 			}
 		}
+		else if($rvar_smimgpath != '' && $rvar_isneed_getsmimg == 'yes')
+		{
+			$rvar_smimgpath = $sql->escape_str($rvar_smimgpath);
+			$sql->query("select * from {$sql->tables_prefix}archives where path = '{$rvar_smimgpath}'");
+			$sql->parse_results();
+			if(isset($sql->row['smimgpath']) && $sql->row['smimgpath'] != '')
+				$rvar_smimgpath = $sql->row['smimgpath'];
+		}
+		
 		if($rvar_descript == '')
 		{
 			$rvar_descript = trim(subUTF8(strip_tags($rvar_content),$article_descript_charnum));
 		}
+		
 		if(is_numeric($rvar_scans) && $rvar_scans!='')
 			$scansCount = $rvar_scans;
 		else
@@ -177,21 +233,20 @@ class article
 		$content = $sql->escape_str($rvar_content);
 		$descript = $sql->escape_str($rvar_descript);
 		$smimgpath = $sql->escape_str($rvar_smimgpath);
-		$time = time();
+		//$time = time();
 		$tablename = $this->tablename;
 		$userID = $this->session->userID;
 		$sql->query("UPDATE $tablename SET title='$title',author='$author', " . 
-				" time=$time,content='$content',descript='$descript',smimgpath='$smimgpath',".
-				" scansCount=$scansCount,sec_ID=$rvar_sec_ID " . 
+				" time=$time,addtime=$addtime,content='$content',descript='$descript',smimgpath='$smimgpath',".
+				" scansCount=$scansCount,sec_ID=$rvar_sec_ID,tpl='$tpl',level='$level' " . 
 				" WHERE articleID=$rvar_articleID and userID=$userID");
 		$tags = new tags(&$sql);
 		$tags->update();
 		if($sql->err == SQL_SUCCESS)
 		{
 			//$articlecache = $zengl_cms_tpl_dir . 'show_article_cache'. $rvar_articleID .'.php';
-			$articlecache = $this->GetSecDirFullPath($secID) . '/article-'. $rvar_articleID .'.html';
-			if(file_exists($articlecache))
-				unlink($articlecache);
+			$this->del_article_htmlfiles($this->GetSecDirFullPath($secID) . '/article', 
+										$rvar_articleID);
 			new success('提交情况：','编辑文章成功！',true,true);
 		}
 	}
@@ -220,10 +275,23 @@ class article
 		global $rvar_smimgpath;
 		global $rvar_checksmimg;
 		global $rvar_descript;
+		global $rvar_level;
 		global $rvar_scans;
 		global $rvar_sec_ID;
+		global $rvar_isneed_getsmimg;
+		global $rvar_time;
+		global $rvar_addtime;
+		global $rvar_tpl;
 		global $article_descript_charnum;
-		$time = time();
+		$rvar_time = isset($rvar_time) ? $rvar_time : '';
+		if($rvar_time == '')
+			$time = time();
+		else
+			$time = strtotime($rvar_time);
+		if($rvar_addtime == '')
+			$addtime = $time;
+		else
+			$addtime = strtotime($rvar_addtime);
 		$permis = &$this->permis;
 		$permis->gen_cuid_permis(ARTICLE_EDIT, PER_ALLOW);
 		$permis->gen_cuid_permis(ARTICLE_DEL, PER_ALLOW);
@@ -241,18 +309,28 @@ class article
 				$rvar_smimgpath = $sql->row['smimgpath'];
 			}
 		}
+		else if($rvar_smimgpath != '' && $rvar_isneed_getsmimg == 'yes')
+		{
+			$rvar_smimgpath = $sql->escape_str($rvar_smimgpath);
+			$sql->query("select * from {$sql->tables_prefix}archives where path = '{$rvar_smimgpath}'");
+			$sql->parse_results();
+			if(isset($sql->row['smimgpath']) && $sql->row['smimgpath'] != '')
+				$rvar_smimgpath = $sql->row['smimgpath'];
+		}
+		
 		if($rvar_descript == '')
 		{
 			$rvar_descript = trim(subUTF8(strip_tags($rvar_content),$article_descript_charnum));
 		}
+		
 		if(is_numeric($rvar_scans) && $rvar_scans!='')
 			$scansCount = $rvar_scans;
 		else
 			$scansCount = 0;
-		$sql->insert('articles','title,author,time,content,descript,smimgpath,scansCount,sec_ID,userID,permis',
-				$rvar_title,$rvar_author,$time,$rvar_content,$rvar_descript,
+		$sql->insert('articles','title,author,time,addtime,content,descript,smimgpath,scansCount,sec_ID,userID,tpl,level,permis',
+				$rvar_title,$rvar_author,$time,$addtime,$rvar_content,$rvar_descript,
 				$rvar_smimgpath,$scansCount,$rvar_sec_ID,$this->session->userID,
-				$permis->gen_permis_str());
+				$rvar_tpl,$rvar_level,$permis->gen_permis_str());
 		$sql->query("select articleID from {$sql->tables_prefix}articles order by articleID desc limit 0,1");
 		$sql->parse_results();
 		$tag = new tags(&$sql);
@@ -269,16 +347,17 @@ class article
 		$sql->parse_results();
 		$secID = $sql->row['sec_ID'];
 		$sql->query("DELETE FROM $this->tablename WHERE articleID=$rvar_articleID");
+		$tag = new tags(&$sql);
+		$tag->update_for_del_articles($rvar_articleID); //清理tag标签
 		if($sql->err== SQL_SUCCESS)
 		{
 			//$articlecache = $zengl_cms_tpl_dir . 'show_article_cache'. $rvar_articleID .'.php';
-			$articlecache = $this->GetSecDirFullPath($secID) . '/article-'. $rvar_articleID .'.html';
-			if(file_exists($articlecache))
-				unlink($articlecache);
+			$this->del_article_htmlfiles($this->GetSecDirFullPath($secID) . '/article',
+										$rvar_articleID);
 			new success('删除情况：','删除文章成功！',true,true);
 		}
 	}
-	function recursive_show_options($id,$count,$select)
+	function recursive_show_options($id,$count,$select = '')
 	{
 		$secname = $this->all[$id]['sec_name'];
 		$secname = "|--+$secname";
@@ -302,44 +381,14 @@ class article
 	{
 		if(is_array($this->all))
 			return;
-		else if(file_exists($this->array_file))
+		$section = new section(false,false);
+		$section->sql = $section->permis->sql = &$this->sql;
+		$section->getall();
+		$section = null;
+		if(file_exists($this->array_file))
 			$this->all = unserialize(file_get_contents($this->array_file));
 		else 
-		{
-			$this->all = array();
-			$sql = &$this->sql;
-			$sql->query("select * from $sql->tables_prefix" . "section");
-			while($sql->parse_results())
-			{
-				$this->all[$sql->row['sec_ID']] = array('sec_ID'=>$sql->row['sec_ID'] ,
-						'sec_name'=>$sql->row['sec_name'],
-						'sec_dirname'=>$sql->row['sec_dirname'],
-						'sec_parent_ID'=>$sql->row['sec_parent_ID'],
-						'sec_content'=>$sql->row['sec_content'],
-						'sec_weights'=>$sql->row['sec_weights'],
-						'permis'=>$sql->row['permis']);
-			}
-			foreach ($this->all as $secId => $array)
-			{
-				$parentId = $array['sec_parent_ID'];
-				if(!isset($patharray[$parentId]))
-				{
-					$path = '';
-					$tmpid = $parentId;
-					while($tmpid > 0)
-					{
-						if($path == '')
-							$path = $this->all[$tmpid]['sec_dirname'];
-						else
-							$path = $this->all[$tmpid]['sec_dirname'] . '/' . $path;
-						$tmpid = $this->all[$tmpid]['sec_parent_ID'];
-					}
-					$patharray[$parentId] = $path;
-				}
-				$this->all[$secId]['sec_dirpath'] = $patharray[$parentId];
-			}
-			file_put_contents($this->array_file, serialize($this->all));
-		}
+			new error('错误信息','栏目缓存不存在!',true,true);
 	}
 	function show_add_article()
 	{
@@ -382,86 +431,6 @@ class article
 		}
 		else
 			die('tpl class file list_articles_class.php does not exist!');
-	}
-	function list_articles_ajax()
-	{
-		global $zengl_cms_tpl_dir;
-		global $zengl_theme;
-		global $zengl_old_theme;
-		if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_theme . '/class/list_articles_ajax_class.php'))
-			include $zengl_theme_tpl_class;
-		else if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_old_theme .
-				'/class/list_articles_ajax_class.php'))
-		{
-			$zengl_theme = $zengl_old_theme;
-			include $zengl_theme_tpl_class;
-		}
-		else
-			die('tpl class file list_articles_ajax_class.php does not exist!');
-	}
-	function index_articles_divs()
-	{
-		global $adminHtml_genhtml;
-		global $zengl_cms_rootdir;
-		$sql = &$this->sql;
-		$i = '0';
-		$count = 0;
-		$sec_count = 0;
-		if($adminHtml_genhtml == 'yes')
-			$flaghtml = true;
-		else
-			$flaghtml = false;
-		while ($sql->parse_results())
-		{
-			if($sql->row['sec_ID'] != $i)
-			{
-				if(++$sec_count > $this->index_sec_count)
-					break;
-				if(!$flaghtml)
-					$loc_more = "{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=list&sec_ID={$sql->row['sec_ID']}" . 
-							  	"&is_recur=yes";
-				else
-				{
-					$secId = $sql->row['sec_ID'];
-					if($this->all[$secId]['sec_dirpath'] != '')
-						$sec_dirpath = 'html/' . $this->all[$secId]['sec_dirpath'] . '/' .
-										  $this->all[$secId]['sec_dirname'];
-					else
-						$sec_dirpath = 'html/' . $this->all[$secId]['sec_dirname'];
-					$loc_more = "{$zengl_cms_rootdir}{$sec_dirpath}" . '/';
-				}
-				if($i != '0')
-					echo "</div></div><div class='article_img_footer'></div></div>";
-				$i = $sql->row['sec_ID'];
-				echo "<div class='wrap_div'>
-						<div class='article_img_header'>
-						</div>
-						<div class='article_img_middle'>
-						<div class='wrap_header'>
-						<span>
-						{$this->all[$sql->row["sec_ID"]]["sec_name"]}
-						&nbsp;&nbsp; <a href='$loc_more' title='查看<{$this->all[$sql->row["sec_ID"]]["sec_name"]}>更多的文章信息'>
-						more...</a>
-						</span>
-						</div>
-						<div class='wrap_content'>";	
-				$count = 0;
-			}
-			if(!$flaghtml)
-				$loc_article = "{$zengl_cms_rootdir}add_edit_del_show_list_article.php?hidden=show&articleID={$sql->row['articleID']}";
-			else 
-			{
-				$loc_article = "{$zengl_cms_rootdir}{$sec_dirpath}" . '/' . 'article-' .
-								 $sql->row['articleID'] . '.html';
-			}
-			if(++$count <= $this->index_count)
-			{
-				$title = subUTF8($sql->row['title'],30);
-				echo "<span><a href = '$loc_article' title= '{$sql->row['title']}'>$title</a></span>";
-			}
-		}
-		if($i!=0)
-			echo "</div></div><div class='article_img_footer'></div></div>";
 	}
 	function index_articles()
 	{
@@ -593,23 +562,6 @@ class article
 		else
 			die('tpl class file admin_list_article_class.php does not exist!');
 	}
-	function admin_list_ajax()
-	{
-		global $zengl_cms_tpl_dir;
-		global $zengl_theme;
-		global $zengl_old_theme;
-		if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_theme . 
-				'/class/admin_list_article_ajax_class.php'))
-			include_once $zengl_theme_tpl_class;
-		else if(file_exists($zengl_theme_tpl_class = $zengl_cms_tpl_dir . $zengl_old_theme .
-				'/class/admin_list_article_ajax_class.php'))
-		{
-			$zengl_theme = $zengl_old_theme;
-			include_once $zengl_theme_tpl_class;
-		}
-		else
-			die('tpl class file admin_list_article_ajax_class.php does not exist!');
-	}
 	function admin_multi_del_move()
 	{
 		global $rvar_id;
@@ -644,9 +596,9 @@ class article
 			else
 			{
 				//$articlecache = $zengl_cms_tpl_dir . 'show_article_cache'. $id .'.php';
-				$articlecache = $this->GetSecDirFullPath($sql->row['sec_ID']) . '/article-'. $sql->row['articleID'] .'.html';
-				if(file_exists($articlecache))
-					unlink($articlecache);
+				$this->del_article_htmlfiles(
+							$this->GetSecDirFullPath($sql->row['sec_ID']) . '/article', 
+							$sql->row['articleID']);
 				if($rvar_action == 'multidel')
 					$del_str .= '删除文章：' . $sql->row['title'] . ' (id = ' . $sql->row['articleID'] . ') 成功!<br/>';
 				else if($rvar_action == 'multimove')
@@ -655,7 +607,11 @@ class article
 			}
 		}
 		if($rvar_action == 'multidel')
+		{
 			$sql->query("DELETE FROM $tablename WHERE $id_str");
+			$tag = new tags(&$sql);
+			$tag->update_for_del_articles($rvar_id); //清理tag标签
+		}
 		else if($rvar_action == 'multimove')
 			$sql->query("UPDATE $tablename SET sec_ID = $rvar_sec_ID WHERE $id_str");
 		if($sql->err== SQL_SUCCESS)
@@ -664,6 +620,34 @@ class article
 				new success('删除情况：',$del_str,true,true);
 			else if($rvar_action == 'multimove')
 				new success('移动情况：',$del_str,true,true);
+		}
+	}
+	/**
+	 * 批量设置文章级别
+	 * */
+	function admin_multi_level_change()
+	{
+		global $rvar_id;
+		global $rvar_level;
+		if($rvar_id == '')
+			new error('无效参数','请选择要操作的文章id',true,true);
+		else if(!is_numeric($rvar_level))
+			new error('无效参数','请选择要设置的级别',true,true);
+		$id_array = explode(',', $rvar_id);
+		$id_str = '';
+		foreach ($id_array as $key => $id)
+		{
+			if($key == 0)
+				$id_str = 'articleID=' . $id;
+			else
+				$id_str .= ' or articleID='.$id;
+		}
+		$sql = &$this->sql;
+		$tablename = $this->tablename;
+		$sql->query("UPDATE $tablename SET level = '$rvar_level' WHERE $id_str");
+		if($sql->err== SQL_SUCCESS)
+		{
+			die('<script language="javascript" type="text/javascript">javascript:history.go(-1);</script>');
 		}
 	}
 	function admin_multi_html()
@@ -676,45 +660,67 @@ class article
 		if($rvar_id == '')
 			new error('无效参数','请选择要操作的文章id',true,true);
 		$id_array = explode(',', $rvar_id);
+		$this->progress_begin("准备生成静态页面", count($id_array));
 		foreach ($id_array as $id)
 		{
 			$rvar_articleID = $id;
 			$this->show_article();
 		}
+		$this->progress_end("<a href='javascript:history.go(-1);'>生成完毕，点此返回</a>",false);
 		$adminHtml_genhtml = 'no'; //sql对象撤销时用于释放数据库连接用的。
 	}
 	function OneKeyHtml()
 	{
+		set_time_limit(0);
+		global $zengl_cms_tpl_dir;
+		global $zengl_theme;
+		//如果存在自定义的生成栏目静态页面的class处理程式，则调用该主题下的class.php
+		if(file_exists($zengl_cms_tpl_dir . $zengl_theme . '/class/onekeyhtml_class.php'))
+		{
+			include $zengl_cms_tpl_dir . $zengl_theme . '/class/onekeyhtml_class.php';
+			return;
+		}
+		
 		global $zengl_cms_rootdir;
 		global $rvar_sec_ID;
 		global $rvar_sec_page;
 		global $adminHtml_genhtml;
 		global $rvar_is_recur;
 		global $rvar_articleID;
+		global $rvar_tpl_action;
+		global $sec_allrownum;
 		header( "Content-Type:   text/html;   charset=UTF-8 ");
 		$adminHtml_genhtml = 'yes';
 		$rvar_is_recur = 'yes';
+		$this->sql->query("select * from {$this->sql->tables_prefix}articles");
+		$totalrow_num = $this->sql->get_num();
+		$totalsec_page = ceil($totalrow_num / $this->page_size);
+		$this->progress_begin("准备生成静态页面", $totalsec_page + $totalrow_num + 1);
 		$this->getallsections();
 		$this->index_articles();
 		foreach ($this->all as $secId => $array)
 		{
 			$rvar_sec_ID = $secId;
-			$allrownum = $this->list_articles();
-			$pagecount = ceil($allrownum/$this->page_size);
+			$rvar_tpl_action = 'default';
+			$this->list_articles();
+			$pagecount = ceil($sec_allrownum/$this->page_size);
+			$rvar_tpl_action = 'listajax';
 			for($i=2;$i<=$pagecount;$i++)
 			{
 				$rvar_sec_page = $i;
-				$this->list_articles_ajax();
+				$this->list_articles();
 			}
 		}
+		$rvar_tpl_action = '';
 		$sql = new sql('utf8');
 		$sql->query("select * from $sql->tables_prefix" . "articles");
 		while ($sql->parse_results()) {
 			$rvar_articleID = $sql->row['articleID'];
 			$this->show_article();
 		}
-		echo "<p><a href='{$zengl_cms_rootdir}index.html' target='_blank'>" .
-			  "点此查看主页</a></p>";
+		$this->progress('生成完毕!');
+		$this->progress_end("<a href='{$zengl_cms_rootdir}index.html' target='_blank'>" .
+			  				"点此查看主页</a>",false);
 		$adminHtml_genhtml = 'no'; //sql对象撤销时用于释放数据库连接用的。
 	}
 	function ShowGenHTMLforSec()
@@ -744,8 +750,42 @@ class article
 				$this->recur_sec_array(&$array, $next);
 		}
 	}
+	/*
+	 * 输出进度条的开头
+	 * 参数$title 标题和初始进度名
+	 * 参数$total 总共需要操作的记录数
+	 * */
+	function progress_begin($title,$total)
+	{
+		$this->progress->begin($title, $total);
+	}
+	/*
+	 * 输出进度条
+	 * 参数$msg 进度条的消息
+	 * */
+	function progress($msg,$isNeedAddProgress = true)
+	{
+		$this->progress->step($msg,$isNeedAddProgress);
+	}
+	/*
+	 * 输出进度条结束
+	 * 参数$msg 进度条的消息*/
+	function progress_end($msg,$isNeedAddLog = true)
+	{
+		$this->progress->end($msg,$isNeedAddLog);
+	}
 	function GenHTMLforSec()
 	{
+		set_time_limit(0);
+		global $zengl_cms_tpl_dir;
+		global $zengl_theme;
+		//如果存在自定义的生成栏目静态页面的class处理程式，则调用该主题下的class.php
+		if(file_exists($zengl_cms_tpl_dir . $zengl_theme . '/class/GenHtmlForSec_class.php'))
+		{
+			include $zengl_cms_tpl_dir . $zengl_theme . '/class/GenHtmlForSec_class.php';
+			return;
+		}
+		
 		global $zengl_cms_rootdir;
 		global $rvar_sec_ID;
 		global $rvar_sec_page;
@@ -754,6 +794,8 @@ class article
 		global $rvar_articleID;
 		global $rvar_checkbox;
 		global $rvar_secID;
+		global $rvar_tpl_action;
+		global $sec_allrownum;
 		header( "Content-Type:   text/html;   charset=UTF-8 ");
 		$is_gen_article = false;
 		$is_recur_sec = false;
@@ -784,17 +826,21 @@ class article
 		}
 		else 
 			array_push($array, $rvar_secID);
+		$this->progress_begin('准备生成静态页面',count($array) + 1);
 		foreach ($array as $secId)
 		{
 			$rvar_sec_ID = $secId;
-			$allrownum = $this->list_articles();
-			$pagecount = ceil($allrownum/$this->page_size);
+			$rvar_tpl_action = 'default';
+			$this->list_articles();
+			$pagecount = ceil($sec_allrownum/$this->page_size);
+			$rvar_tpl_action = 'listajax';
 			for($i=2;$i<=$pagecount;$i++)
 			{
 				$rvar_sec_page = $i;
-				$this->list_articles_ajax();
+				$this->list_articles();
 			}
 		}
+		$rvar_tpl_action = '';
 		if($is_gen_article)
 		{
 			$sql = new sql('utf8');
@@ -810,22 +856,27 @@ class article
 								  "sec_ID=$rvar_secID";
 			}
 			$sql->query($this->sqlstr);
+			$this->progress->setNewTotalTask($sql->get_num()+1);
 			while ($sql->parse_results()) {
 				$rvar_articleID = $sql->row['articleID'];
 				$this->show_article();
 			}
 		}
 		$this->index_articles();
-		echo "<p><a href='{$zengl_cms_rootdir}index.html' target='_blank'>" .
-		"点此查看主页</a></p>";
+		$this->progress_end("<a href='{$zengl_cms_rootdir}index.html' target='_blank'>" .
+							"点此查看主页</a>",false);
 		$adminHtml_genhtml = 'no'; //sql对象撤销时用于释放数据库连接用的。
 	}
 	function OneKeyRM_HTML()
 	{
+		set_time_limit(0);
 		header( "Content-Type:   text/html;   charset=UTF-8 ");
-		rmdirs('html');
+		$this->progress_begin('正在获取所有的文件个数...',15);
+		$totalfiles = getdirs('html');
+		$this->progress->setNewTotalTask($totalfiles + 3);
+		rmdirs('html',&$this->progress);
 		unlink('index.html');
-		echo '删除主页index.html<br/>';
+		$this->progress_end('删除主页index.html');
 	}
 	function GetSecDirFullPath($secId)
 	{
@@ -837,6 +888,47 @@ class article
 		else
 			$sec_dirpath = "html/" . $this->all[$secId]["sec_dirname"];
 		return $sec_dirpath;
+	}
+	/*添加编辑文章时，将文章保存为草稿*/
+	function AjaxSaveToDraft()
+	{
+		global $rvar_content;
+		global $rvar_isAutoSave;
+		global $zengl_cms_filecache_dir;
+		if(!isset($rvar_isAutoSave)) $rvar_isAutoSave = '';
+		$draft_dir = $zengl_cms_filecache_dir . 'draft';
+		mkdirs($draft_dir);
+		$draft_file = $draft_dir . '/' .'article_draft_cache_uid_'.$this->session->userID.'.draft';
+		if(get_magic_quotes_gpc())
+			file_put_contents($draft_file,stripslashes($rvar_content));
+		else
+			file_put_contents($draft_file,$rvar_content);
+		$time = date("Y年m月d日 H时i分s秒");
+		if($rvar_isAutoSave == 'yes')
+			$save_feedback = ' 系统自动保存内容到草稿中';
+		else
+			$save_feedback = ' 成功保存内容到草稿中';
+		exit('服务端时间:'.$time.$save_feedback);
+	}
+	function AjaxGetDraft()
+	{
+		global $zengl_cms_filecache_dir;
+		$draft_dir = $zengl_cms_filecache_dir . 'draft';
+		$draft_file = $draft_dir . '/' .'article_draft_cache_uid_'.$this->session->userID.'.draft';
+		if(!file_exists($draft_file))
+		{
+			$json_array['hasDraft'] = 'no';
+			$json_array['time'] = '';
+			$json_array['content'] = '';
+			$json_encode_string = json_encode($json_array);
+			exit($json_encode_string);
+		}
+		$content = file_get_contents($draft_file);
+		$json_array['hasDraft'] = 'yes';
+		$json_array['time'] = date("Y年m月d日 H时i分s秒",filemtime($draft_file));
+		$json_array['content'] = $content;
+		$json_encode_string = json_encode($json_array);
+		exit($json_encode_string);
 	}
 }
 ?>

@@ -18,17 +18,46 @@ $(document).ready(function() {
 		});
 </script>
 <title>{zengl title}</title>
+<style>
+table{
+	width:100%;
+}
+tr td{
+	background:#c7fab5;
+}
+tr .first_td{
+	width:150px;
+	text-align:center;
+}
+#header_title{
+	font-size:18px;
+	background:#c7fab5;
+	margin-bottom:10px;
+}
+</style>
 </head>
 <body>
-<h2>{zengl title}</h2>
+<div id="header_title">{zengl title}</div>
 	<form action={zengl action_loc} method="post">
-		栏目：
-		<select name="secID" id='secID'>
-			{zengl options}
-		</select> <br/>
-		<input type="checkbox" name="checkbox[]" id="gen_article" value="gen_article">是否要生成该栏目的文章静态页面</input><br/>
-		<input type="checkbox" name="checkbox[]" id="is_recur" value="is_recur">是否递归生成子栏目</input><br/>
-		<input type="submit" value="提交" />
+		<table>
+		<tbody>
+			<tr>
+				<td class="first_td">栏目列表</td>
+				<td><select name="secID" id='secID'>{zengl options}</select></td>
+			</tr>
+			<tr>
+				<td class="first_td"><input type="checkbox" name="checkbox[]" id="gen_article" value="gen_article"></input></td>
+				<td>是否要生成该栏目的文章静态页面</td>
+			</tr>
+			<tr>
+				<td class="first_td"><input type="checkbox" name="checkbox[]" id="is_recur" value="is_recur"></input></td>
+				<td>是否递归生成子栏目</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="right"><input type="submit" value="提交" /></td>
+			</tr>
+		</tbody>
+		</table>
 		<input type="hidden" name="hidden" id="hidden" value='gensechtml' />
 	</form>
 </body>

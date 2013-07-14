@@ -22,7 +22,7 @@
 */
 
 include 'common_fun/file_func.php';
-i_need_func('permis,err,conf,cache,tpl',__FILE__,true); //最后的参数为true时，file_cache中会生成调试版本的缓存。
+i_need_func('permis,err,conf,cache,tpl,sql',__FILE__,true); //最后的参数为true时，file_cache中会生成调试版本的缓存。
 //i_need_func('permis,err,conf,cache,tpl',__FILE__);
 include $my_need_files;
 
@@ -36,10 +36,14 @@ import_request_variables("gpc","rvar_");
 if($rvar_action == 'show')
 {
 	if(file_exists($tmp_class = $zengl_cms_tpl_dir . $zengl_theme . '/class/config_showset_class.php'))
+	{
+		$zengl_cur_theme = $zengl_theme;
 		include_once $tmp_class;
+	}
 	else if(file_exists($tmp_class = $zengl_cms_tpl_dir . $zengl_old_theme .
 			'/class/config_showset_class.php'))
 	{
+		$zengl_cur_theme = $zengl_theme;
 		$zengl_theme = $zengl_old_theme;
 		include_once $tmp_class;
 	}
@@ -50,6 +54,7 @@ else if($rvar_action == 'setconfig')
 {
 	header( "Content-Type:   text/html;   charset=UTF-8 ");
 	$cache = new cache();
+	$cache->progress_begin('准备进行系统配置...', 3);
 	if($rvar_dbtype != $db_type)
 	{
 		if($rvar_dbtype == '0')
@@ -133,6 +138,14 @@ else if($rvar_action == 'setconfig')
 	{
 		set_config('ZlCfg_ListArticleCount', $rvar_zengl_list_article_count);
 	}
+	if($rvar_zengl_theme != $zengl_theme)
+	{
+		set_config('zengl_theme', '"'.$rvar_zengl_theme.'"');
+	}
+	if($rvar_zengl_old_theme != $zengl_old_theme)
+	{
+		set_config('zengl_old_theme', '"'.$rvar_zengl_old_theme.'"');
+	}
 	if($rvar_use_html != 'yes')
 		$rvar_use_html = 'no';
 	if($rvar_isneed_register != 'yes')
@@ -151,8 +164,26 @@ else if($rvar_action == 'setconfig')
 	{
 		set_config('zengl_cms_isneed_login', '"'. $rvar_isneed_login .'"');
 	}
+	$cache->progress('config.php配置完毕');
+	$set_sql = new sql('utf8'); 
+	foreach ($rvar_setting as $set_group_name => $set_group_array)
+	{
+		foreach ($set_group_array as $set_k => $set_v)
+		{
+			config_set_db_setting(&$set_sql,$set_group_name,$set_k,$set_v);
+		}
+		config_get_db_setting($set_group_name,&$set_sql);
+	}
+	$set_sql = null;
+	$cache->progress('数据库中的配置完毕');
+	$config_progress_width = $cache->progress->width;
 	$cache->clear_caches();
-	echo '<br/><br/><font color="red">配置情况：系统配置成功</font><br/>';
+	echo '<script language="JavaScript">'; //因为clear_caches清理了缓存，所以只能手动输出.
+	$msg = '配置情况：系统配置成功!';
+	echo 'updateProgress("'.$msg.'",'.$config_progress_width.');';
+	echo 'addlog("'.$msg.'\n");';
+	echo '</script>';
+	echo '</body></html>';
 }
 else
 	new error('访问失败！','无效的参数',true,true);

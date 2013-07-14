@@ -136,6 +136,8 @@ function get_jmp_locs($cur)
 				echo '<a href="'.$zengl_cms_rootdir .$arg[0].'">'. $arg[1] .'</a>&nbsp;&nbsp;';
 		}
 	}
+	else
+		echo '<a href="javascript:history.go(-1);">[返回]</a>&nbsp;&nbsp;';
 }
 
 function subUTF8($string, $length = 80, $etc = '...')
@@ -349,30 +351,64 @@ function mkdirs($dir)
 	}
 	return true;
 }
-function rmdirs($dir)
+function rmdirs($dir,$progress = null)
 {
 	$d = dir($dir);
+	if(!is_dir($dir))
+		return ;
 	while (false !== ($child = $d->read()))
 	{
 		if($child != '.' && $child != '..')
 		{
 			if(is_dir($dir.'/'.$child))  
 			{
-				rmdirs($dir.'/'.$child);  
-				echo '删除目录：'.$dir.'/'.$child.'<br/>';
-				flush_buffers();
+				rmdirs($dir.'/'.$child,$progress);
 			}
 			else 
 			{
 				unlink($dir.'/'.$child);
-				echo '删除文件：'.$dir.'/'.$child.'<br/>';
-				flush_buffers();
+				if($progress !== null)
+					$progress->step('删除文件：'.$dir.'/'.$child);
+				else
+				{
+					echo '删除文件：'.$dir.'/'.$child.'<br/>';
+					flush_buffers();
+				}
 			}
 		}
 	}  
-	$d->close();  
-	rmdir($dir);
-	echo '删除目录：'.$dir.'<br/>';
-	flush_buffers();
+	$d->close();
+	if(is_dir($dir))
+	{
+		rmdir($dir);
+		if($progress !== null)
+			$progress->step('删除目录：'.$dir);
+		else 
+		{
+			echo '删除目录：'.$dir.'<br/>';
+			flush_buffers();
+		}
+	}
+}
+
+function getdirs($dir)
+{
+	$count = 0;
+	if(!is_dir($dir))
+		return $count;
+	$d = dir($dir);
+	while (false !== ($child = $d->read()))
+	{
+		if($child != '.' && $child != '..')
+		{
+			if(is_dir($dir.'/'.$child))
+				$count += getdirs($dir.'/'.$child);
+			else
+				$count++;
+		}
+	}
+	if(is_dir($dir))
+		$count++;
+	return $count;
 }
 ?>

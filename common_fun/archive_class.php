@@ -49,13 +49,14 @@ class archive
 			if($rvar_archiveID == null)
 				new error('禁止访问','文章ID为空，无法编辑',true,true);
 			$sql = &$this->sql;
-			$sql->query("select userID,permis from {$sql->tables_prefix}archives where archive_ID=" .  
-						$rvar_archiveID);
-			$sql->parse_results();
-			if($this->permis->check_perm($permis, $sql->row['permis']))
-				return true;
-			else
-				return false;
+			$sql->query("select userID,permis from {$sql->tables_prefix}archives where archive_ID in (" .  
+						$rvar_archiveID.")");
+			while($sql->parse_results())
+			{
+				if(!$this->permis->check_perm($permis, $sql->row['permis']))
+					return false;
+			}
+			return true;
 		}
 		else if($permis == ARCHIVE_UPLOAD || $permis == ARCHIVE_LIST)
 		{
@@ -76,7 +77,7 @@ class archive
 		}
 		elseif ($action == 'list')
 			return true;
-		elseif ($action == 'del')
+		elseif ($action == 'del' || $action == 'multi_del')
 		{
 			global $rvar_archiveID;
 			if(isset($rvar_archiveID))
@@ -174,11 +175,16 @@ class archive
 		global $archive_smimg_width;
 		global $archive_smimg_height;
 		global $archive_smimg_dirname;
+		global $rvar_isNeedWaterMark; //是否需要水印
 		header("Content-type: text/html; charset=utf-8");
+		$rvar_isNeedWaterMark = isset($rvar_isNeedWaterMark) ? $rvar_isNeedWaterMark : '';
 		$array = array('jpg','gif','png','jpeg');
 		$title = trim(basename(' ' . $_FILES['upload']['name'])); //加入空格可以修复basename处理中文字符时的BUG。
-		$this->uploadfile = $zengl_upload_dir . $title;
-		$smimgtmp =  $zengl_upload_dir . $archive_smimg_dirname . '/' . $title;
+		$file_type = end(explode(".",$title)); //获取文件后缀名
+		$title = substr($title,0,-(strlen($file_type)+1));
+		$file_name = Pinyin($title,'utf8') . '.' .$file_type;
+		$this->uploadfile = $zengl_upload_dir . $file_name;
+		$smimgtmp =  $zengl_upload_dir . $archive_smimg_dirname . '/' . $file_name;
 		$time = time();
 		$timestr = date('YmdHis',$time);
 		$tmparray = explode('.',$this->uploadfile);
@@ -198,6 +204,11 @@ class archive
 		}
 		else
 		{
+			if($rvar_isNeedWaterMark == 'yes')
+			{
+				$watermark = new WaterMark($this->uploadfile,$rvar_isNeedWaterMark,true,$_GET['CKEditorFuncNum']);
+				$watermark->output();
+			}
 			$tmparray = explode('.',$smimgtmp);
 			if(($tmpcount = count($tmparray)) >= 2)
 			{
@@ -228,7 +239,28 @@ class archive
 			$message = '上传成功！';
 		}
 		$funcNum = $_GET['CKEditorFuncNum'] ;
-		echo "<script type='text/javascript'>window.parent.setimgsmimg('{$smimgpath}',false);window.parent.CKEDITOR.tools.callFunction($funcNum, '$url', '$message');</script>";
+		echo "<script type='text/javascript'>window.parent.setimgsmimg_ineditor('{$smimgpath}');window.parent.CKEDITOR.tools.callFunction($funcNum, '$url', '$message');</script>";
+	}
+	function upload_forWaterMark()
+	{
+		header("Content-type: text/html; charset=utf-8");
+		$array = array('jpg','gif','png','jpeg');
+		$title = trim(basename(' ' . $_FILES['upload']['name'])); //加入空格可以修复basename处理中文字符时的BUG。
+		$file_type = end(explode(".",$title)); //获取文件后缀名
+		if(!in_array($file_type, $array))
+		{
+			die('上传失败:图片后缀名不对，必须是jpg,jpeg,gif,png为后缀的图片格式 ');
+		}
+		$filename = 'watermark.'.$file_type;
+		$this->uploadfile = 'images/'.$filename;
+		if(!move_uploaded_file($_FILES['upload']['tmp_name'], $this->uploadfile))
+		{
+			die('不好意思，上传文件失败！请稍候重传！');
+		}
+		else
+		{
+			echo $filename;
+		}
 	}
 	function list_uploads()
 	{
@@ -282,6 +314,28 @@ class archive
 				unlink($smimgpath);
 			new success('删除情况：','删除指定附件成功！',true,true);
 		}
+	}
+	function multi_del_archives()
+	{
+		global $rvar_archiveID;
+		$sql = &$this->sql;
+		$sql->query("select archive_ID,path,smimgpath from {$sql->tables_prefix}archives where archive_ID in (" .
+					$rvar_archiveID . ")");
+		$tmpsql = new sql('utf8');
+		while($sql->parse_results())
+		{
+			$path = $sql->row['path'];
+			$smimgpath = $sql->row['smimgpath'];
+			$tmpsql->query("DELETE FROM {$sql->tables_prefix}archives WHERE archive_ID={$sql->row['archive_ID']}");
+			if($sql->err== SQL_SUCCESS)
+			{
+				if(file_exists($path))
+					unlink($path);
+				if($smimgpath != '' && file_exists($smimgpath))
+					unlink($smimgpath);
+			}
+		}
+		new success('删除情况：','删除指定附件成功！',true,true);
 	}
 	function show_edit_archive()
 	{

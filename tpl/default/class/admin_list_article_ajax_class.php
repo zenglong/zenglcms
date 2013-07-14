@@ -3,7 +3,10 @@ global $rvar_sec_ID;
 global $rvar_is_recur;
 global $rvar_sec_page;
 global $zengl_cms_rootdir;
-$section = new section(true,true);
+//$section = new section(true,true);
+$section = new section();
+$section->session = &$this->session;
+$section->sql = &$this->sql;
 $sql = &$this->sql;
 if($this->check_login())
 {
@@ -85,9 +88,9 @@ else
 	$tpl->setVar('article_time','<?php echo date("Y/n/j G:i:s",$sql->row["time"]) ?>');
 	$tpl->setVar('article_html_status', '
 			if(file_exists($this->GetSecDirFullPath($sql->row["sec_ID"]) . "/article-". $sql->row["articleID"] .".html"))
-				echo "<span STYLE=\"color: #00ff00\">已静态化</span>";
+				echo "<span class=\"state_span_green\">已静态化</span>";
 			else
-				echo "<span STYLE=\"color: #ff0000\">未静态化</span>";
+				echo "<span class=\"state_span_red\">未静态化</span>";
 			',true);
 	$tpl->setVar('article_edit', $edit);
 	$tpl->setVar('article_del', $del);
