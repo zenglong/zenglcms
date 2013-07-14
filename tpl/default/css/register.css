@@ -1,0 +1,57 @@
+#main{
+	width: 787px;
+	margin: 90px auto 0;
+}
+#main_head{
+	background-image: url("../images/success_error_tpl_img/shengheadpaper.jpg");
+	background-repeat: no-repeat;
+	height: 83px;
+	width: 787px;
+}
+#title{
+	color: red;
+	margin-left: 200px; 
+	padding-top: 30px;
+	font:bold 18pt arial;
+	width:450px;
+}
+#title a{
+	font:bold 11pt arial;
+	text-decoration:none;
+}
+#main_mid{
+	background-image: url("../images/success_error_tpl_img/shengmidpaper.jpg");
+	background-repeat: repeat-y;
+	height: 296px;
+	width: 787px;
+}
+#content{
+	margin-left: 150px;
+   	padding-top: 20px;
+   	width: 400px;
+}
+#content dl dt{
+	width: 90px;
+	display: inline-block; 
+	float: left;
+}
+#content dl dd{
+	width: 300px;
+	display: inline-block; 
+	float: left; 
+	margin-left: 0px;
+	padding-bottom: 2px;
+}
+#content dl dd#authumdiv{
+	width:140px;
+}
+#content dl dd#authImgdiv{
+	float:right;
+	width:170px;
+}
+#main_last{
+	background-image: url("../images/success_error_tpl_img/shenglastpaper.jpg");
+	background-repeat: no-repeat;
+	height: 95px;
+	width: 787px;
+}

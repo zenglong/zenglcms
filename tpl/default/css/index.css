@@ -1,0 +1,125 @@
+#maindiv{
+	width:930px;
+	margin:0 auto;
+}
+#centerdiv{
+	width:930px;
+}
+#center_left{
+	width:700px;
+	float:left;
+}
+#center_right{
+	width:195px;
+	float:right;
+}
+#center_right .comment_content{
+	margin-top:10px;
+}
+#center_right span{
+	margin-left:8px;
+	margin-right:8px;
+}
+.article .wrap_div{
+	width:280px;
+	float:left;
+	/*background-image:url(../images/index_img/indexpaper.jpg);*/
+	overflow:hidden;
+	margin-right: 20px;
+	margin-bottom: 20px;
+	/*border-right:1px solid green;
+	border-left:1px solid green;
+	border-bottom:1px solid green;*/
+}
+.article .wrap_header{
+	padding-left:30px;
+	/*background-image:url(../images/index_img/indexbar.jpg);*/
+	height:20px;
+}
+.article .wrap_content{
+	padding-left:8px;
+	padding-top:5px;
+	padding-bottom:5px;
+	font-size:12pt;
+}
+.article .wrap_content span{
+	margin-top:10px;
+}
+.a_hover{
+	background-color:#000;
+}
+.article .wrap_div a,#recent_updates a,#center_right a{
+	color: #000;
+}
+.wrap_header,.comment_head,.recent_header{
+	font-weight:bold;
+}
+.article div span{
+	display:block;
+}
+a{
+	text-decoration:none;
+}
+#center_left #recent_updates{
+	height: 120px;
+	width: 685px;
+	padding-top:5px;
+}
+#recent_updates span{
+	display:block;
+	float:left;
+	width:300px;
+	margin:5px;
+}
+#center_right span{
+	display:block;
+}
+.shadow{
+    -moz-box-shadow: 3px 3px 4px #aaa;
+    -webkit-box-shadow: 3px 3px 4px #aaa;
+    box-shadow: 3px 3px 4px #aaa; /* For IE 8 */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#aaaaaa')"; /* For IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.Shadow(Strength = 4, Direction = 135, Color = '#aaaaaa');
+	border:1px #aaa solid;
+}
+.updates_img_header{
+	font-size:0; /*解决ie6下空div的高度BUG*/
+	height:11px;
+	background: url("../images/index_img/index_update_header.jpg") no-repeat;
+}
+.updates_img_middle{
+	height:107px;
+	padding-left:10px;
+	background: url("../images/index_img/index_update_middle.jpg") repeat-y;
+}
+.updates_img_footer{
+	height:11px;
+	background: url("../images/index_img/index_update_footer.jpg") no-repeat;
+}
+.comment_img_header{
+	font-size:0; /*解决ie6下空div的高度BUG*/
+	height:13px;
+	background: url("../images/index_img/index_comment_header.jpg") no-repeat;
+}
+.comment_img_middle{
+	background: url("../images/index_img/index_comment_middle.jpg") repeat-y;
+}
+.comment_img_footer{
+	height:11px;
+	background: url("../images/index_img/index_comment_footer.jpg") no-repeat;
+}
+.article_img_header{
+	font-size:0; /*解决ie6下空div的高度BUG*/
+	height:14px;
+	background: url("../images/index_img/index_article_header.jpg") no-repeat;
+}
+.article_img_middle{
+	background: url("../images/index_img/index_article_middle.jpg") repeat-y;
+}
+.article_img_footer{
+	height:11px;
+	background: url("../images/index_img/index_article_footer.jpg") no-repeat;
+}
+#sm_imgs img{
+	border:0px   none;
+}

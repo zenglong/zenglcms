@@ -1,0 +1,22 @@
+#left{
+	border: solid 1px blue; 
+	margin-right: 10px;
+	margin-bottom: 10px;
+	float:left;
+	height: 500px;
+	width: 25%;
+}
+#right{
+	border: solid 1px blue;
+	float:left;
+	height: 500px;
+	width:70%;
+}
+#frameleft{
+	height: 500px;
+	width: 100%;
+}
+#frameright{
+	height: 500px;
+	width:100%;
+}

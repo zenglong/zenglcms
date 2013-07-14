@@ -1,0 +1,45 @@
+#maindiv{
+	width:1500px;
+}
+.comment_table .comment_td{
+	padding-left:20px;
+}
+
+.comment_table thead tr .header {
+	background-image: url(../images/tableSort/bg.gif);
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+
+.comment_table thead tr .headerSortUp {
+	background-image: url(../images/tableSort/asc.gif);
+}
+
+.comment_table thead tr .headerSortDown {
+	background-image: url(../images/tableSort/desc.gif);
+}
+
+.comment_table thead tr .headerSortUp, .comment_table thead tr .headerSortDown{
+	background-color: #8DBDD8;
+}
+
+table tr td p{
+	margin-top: 0px; 
+	margin-bottom: 0px;
+}
+
+#simplemodal-overlay {background-color:#000;}
+#simplemodal-container {background-color:#333; border:8px solid #444; padding:12px;}
+
+#del_dialog .buttons div{
+	background-image:url(../images/dialog_button.gif); 
+	background-repeat: repeat-x;
+	cursor: pointer;
+	float: right;
+	font-weight: bold;
+	height: 26px;
+	margin-left: 4px;
+	text-align: center;
+	width: 70px;
+}

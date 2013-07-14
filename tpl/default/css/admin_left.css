@@ -1,0 +1,26 @@
+.menu_list {	
+	width: 200px;
+}
+.menu_head {
+	padding: 5px 10px;
+	cursor: pointer;
+	position: relative;
+	margin:1px;
+    font-weight:bold;
+    background: #eef4d3 url(../images/admin_left_css_img/left.png) center right no-repeat;
+}
+.menu_body {
+	display:none;
+}
+.menu_body a{
+  display:block;
+  color:#006699;
+  background-color:#EFEFEF;
+  padding-left:30px;
+  font-weight:bold;
+  text-decoration:none;
+}
+.menu_body a:hover{
+  color: #000000;
+  text-decoration:underline;
+  }

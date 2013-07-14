@@ -1,0 +1,35 @@
+#maindiv{
+	width:800px;
+	margin:0 auto;
+	/*text-align:left;*/
+}
+#section_input{
+	margin-bottom: 20px;
+}
+#article{
+	width: 1000px;
+	/*height: 560px;*/
+}
+.article #buttom_op{
+	margin-top: 10px; 
+	margin-bottom: 10px;
+}
+a{
+	text-decoration:none;
+}
+#simplemodal-overlay {background-color:#000;}
+#simplemodal-container {background-color:#333; border:8px solid #444; padding:12px;}
+#del_dialog .buttons div,#html_dialog .buttons div,#move_dialog .buttons div,#move_dialog_ask .buttons div{
+	background-image:url(../images/admin_list_articles_css_img/dialog_button.gif); 
+	background-repeat: repeat-x;
+	cursor: pointer;
+	float: right;
+	font-weight: bold;
+	height: 26px;
+	margin-left: 4px;
+	text-align: center;
+	width: 70px;
+}
+#move_dialog .buttons div{
+	margin-top:30px
+}
